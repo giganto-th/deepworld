@@ -51,6 +51,52 @@ function buildRampTexture() {
   return tex;
 }
 const rampTexture = buildRampTexture();
+const noMask = new THREE.DataTexture(new Uint8Array([255]), 1, 1, THREE.RedFormat);
+noMask.needsUpdate = true;
+
+// Land mask over a lat/lon box (e.g. Thailand): canvas-rasterized polygons → R8 texture.
+// Surfaces given this mask discard everything outside it.
+export function createMask(polygons, bounds, width = 2048) {
+  const height = Math.round(width * ((bounds.latMax - bounds.latMin) / (bounds.lonMax - bounds.lonMin)));
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const sx = width / (bounds.lonMax - bounds.lonMin);
+  const sy = height / (bounds.latMax - bounds.latMin);
+  ctx.fillStyle = '#fff';
+  for (const rings of polygons) {
+    ctx.beginPath();
+    for (const ring of rings) {
+      ring.forEach(([lon, lat], i) => {
+        const x = (lon - bounds.lonMin) * sx;
+        const y = (bounds.latMax - lat) * sy;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+    }
+    ctx.fill('evenodd');
+  }
+  const px = ctx.getImageData(0, 0, width, height).data;
+  const data = new Uint8Array(width * height);
+  for (let y = 0; y < height; y++) {
+    const src = y * width * 4;
+    const dst = (height - 1 - y) * width; // texture row 0 = south
+    for (let x = 0; x < width; x++) data[dst + x] = px[src + x * 4 + 3];
+  }
+  const texture = new THREE.DataTexture(data, width, height, THREE.RedFormat);
+  texture.magFilter = texture.minFilter = THREE.LinearFilter;
+  texture.needsUpdate = true;
+  return {
+    texture,
+    data,
+    width,
+    height,
+    uvMin: new THREE.Vector2((bounds.lonMin + 180) / 360, (bounds.latMin + 90) / 180),
+    uvSize: new THREE.Vector2((bounds.lonMax - bounds.lonMin) / 360, (bounds.latMax - bounds.latMin) / 180),
+  };
+}
 
 function buildHeightTexture(grid) {
   const half = new Uint16Array(grid.data.length);
@@ -105,11 +151,19 @@ const fragmentShader = /* glsl */ `
   uniform float uRampMax;
   uniform vec4 uHole;    // global uv rect covered by a more detailed surface
   uniform bool uHoleOn;
+  uniform sampler2D uMask; // optional land mask (see createMask)
+  uniform bool uMaskOn;
+  uniform vec2 uMaskMin;
+  uniform vec2 uMaskSize;
   varying vec2 vUv;
   varying vec2 vG;
   ${COMMON}
   void main() {
     if (uHoleOn && vG.x > uHole.x && vG.x < uHole.z && vG.y > uHole.y && vG.y < uHole.w) discard;
+    if (uMaskOn) {
+      vec2 mu = (vG - uMaskMin) / uMaskSize;
+      if (any(lessThan(mu, vec2(0.0))) || any(greaterThan(mu, vec2(1.0))) || texture2D(uMask, mu).r < 0.5) discard;
+    }
 
     float lat = (vG.y - 0.5) * PI;
     float lon = (vG.x * 2.0 - 1.0) * PI;
@@ -179,6 +233,10 @@ export function createSurface(grid, { segments = 256, globe = false } = {}) {
     uRampMax: { value: RAMP_MAX },
     uHole: { value: new THREE.Vector4() },
     uHoleOn: { value: false },
+    uMask: { value: noMask },
+    uMaskOn: { value: false },
+    uMaskMin: { value: new THREE.Vector2() },
+    uMaskSize: { value: new THREE.Vector2(1, 1) },
   };
   const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
   const geometry = globe
@@ -203,6 +261,13 @@ export function createSurface(grid, { segments = 256, globe = false } = {}) {
         (g.lonMin + 180) / 360 + iu, (g.latMin + 90) / 180 + iv,
         (g.lonMax + 180) / 360 - iu, (g.latMax + 90) / 180 - iv,
       );
+    },
+    setMask(mask) {
+      uniforms.uMaskOn.value = !!mask;
+      if (!mask) return;
+      uniforms.uMask.value = mask.texture;
+      uniforms.uMaskMin.value.copy(mask.uvMin);
+      uniforms.uMaskSize.value.copy(mask.uvSize);
     },
     dispose() {
       geometry.dispose();

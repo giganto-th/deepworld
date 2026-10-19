@@ -39,6 +39,12 @@
       display: flex; align-items: center; gap: 12px; pointer-events: none;
     }
     header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 0.02em; }
+    header nav { pointer-events: auto; }
+    header nav a {
+      padding: 4px 10px; border-radius: 999px; font-size: 12.5px; text-decoration: none;
+      color: var(--text); background: rgba(90, 169, 255, 0.14); border: 1px solid var(--border);
+    }
+    body:not(.thai) [data-thai-only], body.thai [data-world-only] { display: none; }
     header span { color: var(--muted); font-size: 13px; }
 
     #panel {
@@ -119,7 +125,7 @@
       background: var(--panel); backdrop-filter: blur(10px);
       border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
     }
-    #scale .text { width: 150px; display: flex; flex-direction: column; }
+    #scale .text { width: 170px; display: flex; flex-direction: column; }
     #scale .title { color: var(--muted); font-size: 11.5px; }
     /* Province 3D view card (top center) and pin labels */
     #pcard {
@@ -197,14 +203,19 @@
 
   <header>
     <h1>DeepWorld</h1>
-    <span>ความสูงของเปลือกโลก ทั้งบนบกและใต้มหาสมุทร</span>
+    <span data-world-only>ความสูงของเปลือกโลก ทั้งบนบกและใต้มหาสมุทร</span>
+    <span data-thai-only>ประเทศไทย 3 มิติ แบบละเอียด</span>
+    <nav>
+      <a href="/" data-thai-only>ดูทั้งโลก</a>
+      <a href="/thai" data-world-only>เฉพาะประเทศไทย</a>
+    </nav>
   </header>
 
   <div id="attrib">
     ข้อมูลความสูง: <a href="https://registry.opendata.aws/terrain-tiles" target="_blank" rel="noopener">AWS Terrain Tiles</a>
     (SRTM, GMTED, ETOPO1)<br />
     รอยต่อแผ่นเปลือกโลก: <a href="https://github.com/fraxen/tectonicplates" target="_blank" rel="noopener">PB2002, Bird 2003</a><br />
-    เขตจังหวัด: <a href="https://github.com/chingchai/OpenGISData-Thailand" target="_blank" rel="noopener">OpenGISData-Thailand</a>
+    เขตการปกครอง: <a href="https://github.com/chingchai/OpenGISData-Thailand" target="_blank" rel="noopener">OpenGISData-Thailand</a> (CC BY 4.0, กรมการปกครอง)
   </div>
 
   <aside id="panel" class="collapsed">
@@ -226,14 +237,14 @@
         <label for="sea">ระดับน้ำทะเล <output id="sea-val"></output></label>
         <input id="sea" type="range" min="-6000" max="3000" step="10" />
       </div>
-      <label class="check"><input id="plates" type="checkbox" /> <span class="swatch"></span> รอยต่อแผ่นเปลือกโลก</label>
+      <label class="check" data-world-only><input id="plates" type="checkbox" /> <span class="swatch"></span> รอยต่อแผ่นเปลือกโลก</label>
       <label class="check"><input id="provinces" type="checkbox" /> <span class="swatch prov"></span> เขตจังหวัด (ไทย)</label>
       <div class="row">
         <label for="province">ไปยังจังหวัด</label>
         <select id="province" disabled><option value="">— เลือกจังหวัด —</option></select>
         <div id="province-info"></div>
       </div>
-      <div class="row">
+      <div class="row" data-world-only>
         <label for="quality">ความละเอียด</label>
         <select id="quality">
           <option value="low">ต่ำ (~40 กม./พิกเซล)</option>
@@ -241,9 +252,9 @@
           <option value="high">สูง (~10 กม./พิกเซล)</option>
         </select>
       </div>
-      <hr />
-      <div class="row"><label>บินไปยัง</label></div>
-      <div class="places">
+      <hr data-world-only />
+      <div class="row" data-world-only><label>บินไปยัง</label></div>
+      <div class="places" data-world-only>
         <button data-place="everest">ยอดเอเวอเรสต์</button>
         <button data-place="mariana">ร่องลึกมาเรียนา</button>
         <button data-place="atlantic">สันเขากลางแอตแลนติก</button>
@@ -302,6 +313,6 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js"></script>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>

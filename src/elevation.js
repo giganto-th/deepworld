@@ -166,3 +166,39 @@ export function heightAt(grid, lat, lon) {
   const r1 = data[(y0 + 1) * W + xa] * (1 - fx) + data[(y0 + 1) * W + xb] * fx;
   return r0 * (1 - fy) + r1 * fy;
 }
+
+// Terrain Tiles have spike/pit artifacts (e.g. a row jumping from −900 m to +2,700 m on a
+// 400 m plain, or 2×2-pixel pits 80–150 m deep). Spikes are replaced by the 3×3 median;
+// pits, which come in small clusters, by the 5×5 median. A cheap 4-neighbor mean screens
+// out almost every pixel before any median is computed.
+export function despike(raster, { spike = 150, pit = 60, passes = 3 } = {}) {
+  const { width: W, height: H, data } = raster;
+  const w3 = new Float32Array(9);
+  const w5 = new Float32Array(25);
+  let fixed = 0;
+  for (let pass = 0; pass < passes; pass++) {
+    let changed = 0;
+    for (let y = 2; y < H - 2; y++) {
+      for (let x = 2; x < W - 2; x++) {
+        const k = y * W + x;
+        const h = data[k];
+        const mean4 = (data[k - 1] + data[k + 1] + data[k - W] + data[k + W]) * 0.25;
+        if (Math.abs(h - mean4) < 40) continue;
+        if (h > mean4) {
+          let n = 0;
+          for (let dy = -W; dy <= W; dy += W) for (let dx = -1; dx <= 1; dx++) w3[n++] = data[k + dy + dx];
+          w3.sort();
+          if (h - w3[4] > spike) { data[k] = w3[4]; changed++; }
+        } else {
+          let n = 0;
+          for (let dy = -2 * W; dy <= 2 * W; dy += W) for (let dx = -2; dx <= 2; dx++) w5[n++] = data[k + dy + dx];
+          w5.sort();
+          if (w5[12] - h > pit) { data[k] = w5[12]; changed++; }
+        }
+      }
+    }
+    fixed += changed;
+    if (!changed) break;
+  }
+  return fixed;
+}

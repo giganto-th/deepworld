@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {
-  MAX_LAT, MAX_ZOOM, loadGlobal, loadMercatorRegion, reproject, heightAt, contains,
+  MAX_LAT, MAX_ZOOM, loadGlobal, loadMercatorRegion, reproject, despike, heightAt, contains,
   tileLon, tileLat, lonToTileX, latToTileY,
 } from './elevation.js';
 import {
   EARTH_RADIUS, RAMP_MIN, RAMP_MAX, RAMP_STOPS,
-  createSurface, createDrapedLines, createStarfield, geojsonLines, latLonToVec3, vec3ToLatLon,
+  createSurface, createDrapedLines, createStarfield, createMask, geojsonLines, latLonToVec3, vec3ToLatLon,
 } from './globe.js';
 import { bbox, extremes, createPin } from './province.js';
 
@@ -14,12 +14,22 @@ const PLATES_URL =
   'https://cdn.jsdelivr.net/gh/fraxen/tectonicplates@master/GeoJSON/PB2002_boundaries.json';
 const PROVINCES_URL =
   'https://cdn.jsdelivr.net/gh/chingchai/OpenGISData-Thailand@master/provinces.geojson';
+const SUBDISTRICTS_URL =
+  'https://cdn.jsdelivr.net/gh/chingchai/OpenGISData-Thailand@master/subdistricts.geojson';
 
 const QUALITY = {
   low: { zoom: 2, segments: 512 },
   medium: { zoom: 3, segments: 1024 },
   high: { zoom: 4, segments: 2048 },
 };
+
+// /thai shows only Thailand: one detailed Thailand surface instead of the globe,
+// masked to the national border.
+const THAI_MODE = /\/thai\/?$/.test(location.pathname);
+const THAI_BOUNDS = { latMin: 5.5, latMax: 20.6, lonMin: 97.2, lonMax: 105.8 };
+const THAI_MAX_TILES = 360;
+let baseZoom = 0;   // zoom of the base surface (globe or Thailand)
+let thaiMask = null;
 
 const HOME = { lat: 13.2, lon: 101.0, dist: 1.42 };
 const PLACES = {
@@ -40,7 +50,7 @@ const PROVINCE_MAX_TILES = 240;
 const LABEL_MAX_ALT = 0.2;
 // Province 3D view: exaggeration used on entry and camera tilt from vertical.
 const PROVINCE_EXAG = 4;
-const PROVINCE_TILT = 52 * (Math.PI / 180);
+const PROVINCE_TILT = 66 * (Math.PI / 180); // ~24° above the horizon
 
 const $ = (id) => document.getElementById(id);
 const d2r = Math.PI / 180;
@@ -80,7 +90,7 @@ function makeControls(target, up, provinceMode) {
   } else {
     controls.enablePan = false;
     controls.minDistance = 1.004;
-    controls.maxDistance = 8;
+    controls.maxDistance = THAI_MODE ? 2.2 : 8;
   }
   controls.addEventListener('start', () => { flight = null; });
   controls.update();
@@ -106,6 +116,8 @@ let patch = null;     // high-detail surface around the view, or null
 let patchTiles = null;
 let plates = null;
 let provinces = null; // { lines, highlight, features, labels }
+let tambons = null;   // Map pro_code → [{ name, amp, lines, bbox }]
+let tambonLines = null; // draped tambon boundaries of the province in view
 let flight = null;
 let view = null;      // province 3D view: { f, target, up, prevExag, stemLen, pins }
 let loadId = 0;
@@ -122,6 +134,84 @@ function surfaceHeight(lat, lon) {
 }
 
 // ---------- global data ----------
+// Thailand surface at the finest zoom ≤ maxZoom that fits the tile budget and GPU texture
+// size. Called twice: a quick z7 preview, then z9 (~300 m/px) swapped in when ready.
+async function loadThailand(maxZoom, { preview = false } = {}) {
+  const maxDim = Math.min(renderer.capabilities.maxTextureSize, 8192);
+  const b = THAI_BOUNDS;
+  let t = null;
+  for (let z = maxZoom; z >= 6 && !t; z--) {
+    const x0 = Math.floor(lonToTileX(b.lonMin, z));
+    const x1 = Math.floor(lonToTileX(b.lonMax, z));
+    const y0 = Math.floor(latToTileY(b.latMax, z));
+    const y1 = Math.floor(latToTileY(b.latMin, z));
+    const c = { z, x0, y0, nx: x1 - x0 + 1, ny: y1 - y0 + 1 };
+    if (c.nx * c.ny <= THAI_MAX_TILES && c.nx * 256 <= maxDim && c.ny * 256 <= maxDim) t = c;
+  }
+  const status = (text) => {
+    if (preview) $('loading-text').textContent = text;
+    else $('stats').textContent = text;
+  };
+  if (preview) { $('loading').hidden = false; $('progress').value = 0; }
+  status(`กำลังโหลดประเทศไทย z${t.z} (${t.nx * t.ny} tiles)…`);
+  const merc = await loadMercatorRegion(t.z, t.x0, t.y0, t.nx, t.ny, {
+    onProgress: (p, done, total) => {
+      if (preview) $('progress').value = p;
+      status(`กำลังโหลดประเทศไทย${preview ? '' : 'แบบละเอียด'} z${t.z} (${done}/${total} tiles)…`);
+    },
+  });
+  await new Promise(requestAnimationFrame);
+  despike(merc);
+  const grid = reproject(merc, merc.width, merc.height, {
+    lonMin: tileLon(t.x0, t.z), lonMax: tileLon(t.x0 + t.nx, t.z),
+    latMax: tileLat(t.y0, t.z), latMin: tileLat(t.y0 + t.ny, t.z),
+  });
+  if (globe) { scene.remove(globe.mesh); globe.dispose(); }
+  baseZoom = t.z;
+  globe = createSurface(grid, { segments: 1024 });
+  if (thaiMask) { globe.setMask(thaiMask); thaiRange(); }
+  scene.add(globe.mesh);
+  if (patch) globe.setHole(patch);
+  applyState();
+  if (preview) $('loading').hidden = true;
+  const mpp = ((grid.lonMax - grid.lonMin) / grid.width) * d2r * EARTH_RADIUS * Math.cos(13 * d2r);
+  $('stats').textContent = `ประเทศไทย z${t.z} · ${grid.width}×${grid.height} · ~${fmt(mpp)} ม./พิกเซล` +
+    (preview ? ' · กำลังโหลดแบบละเอียด…' : '');
+}
+
+// Highest / lowest land of Thailand on the base surface (masked samples only).
+let thaiExtent = null;
+function thaiRange() {
+  const g = globe.grid;
+  const m = thaiMask;
+  let min = Infinity;
+  let max = -Infinity;
+  for (let j = 0; j < g.height; j++) {
+    const lat = g.latMin + ((j + 0.5) / g.height) * (g.latMax - g.latMin);
+    const my = Math.floor(((lat - THAI_BOUNDS.latMin) / (THAI_BOUNDS.latMax - THAI_BOUNDS.latMin)) * m.height);
+    if (my < 0 || my >= m.height) continue;
+    for (let i = 0; i < g.width; i++) {
+      const lon = g.lonMin + ((i + 0.5) / g.width) * (g.lonMax - g.lonMin);
+      const mx = Math.floor(((lon - THAI_BOUNDS.lonMin) / (THAI_BOUNDS.lonMax - THAI_BOUNDS.lonMin)) * m.width);
+      if (mx < 0 || mx >= m.width || m.data[my * m.width + mx] < 128) continue;
+      const h = g.data[j * g.width + i];
+      if (h < min) min = h;
+      if (h > max) max = h;
+    }
+  }
+  thaiExtent = { min: Math.max(min, 0), max };
+  updateRange();
+}
+
+// Border mask from the province polygons, applied to every surface in /thai.
+function applyThaiMask() {
+  if (!provinces) return;
+  thaiMask = createMask(provinces.features.map((f) => f.lines), THAI_BOUNDS, 4096);
+  globe?.setMask(thaiMask);
+  patch?.setMask(thaiMask);
+  if (globe) thaiRange();
+}
+
 async function loadQuality(key) {
   const q = QUALITY[key];
   const id = ++loadId;
@@ -132,6 +222,7 @@ async function loadQuality(key) {
   if (id !== loadId) return; // superseded by a newer quality choice
 
   if (globe) { scene.remove(globe.mesh); globe.dispose(); }
+  baseZoom = q.zoom;
   globe = createSurface(grid, { segments: q.segments, globe: true });
   scene.add(globe.mesh);
   dropPatch();
@@ -163,6 +254,7 @@ async function loadProvinces() {
       .map((f) => ({
         name: f.properties.pro_th,
         nameEn: f.properties.pro_en,
+        code: f.properties.pro_code,
         lat: f.properties.lat,
         lon: f.properties.lon,
         area: f.properties.area_sqkm,
@@ -195,6 +287,41 @@ async function loadProvinces() {
   }
 }
 
+// ~7,400 tambons (≈2 MB compressed), grouped by province so a hover only tests
+// the hundred or so tambons of the province under the cursor.
+async function loadSubdistricts() {
+  try {
+    const json = await (await fetch(SUBDISTRICTS_URL)).json();
+    const map = new Map();
+    for (const f of json.features) {
+      const p = f.properties;
+      const lines = geojsonLines(f.geometry);
+      const t = { name: p.tam_th, amp: p.amp_th, lines, bbox: bbox({ lines }) };
+      if (!map.has(p.pro_code)) map.set(p.pro_code, []);
+      map.get(p.pro_code).push(t);
+    }
+    tambons = map;
+    if (view) showTambonLines(view.f);
+  } catch (e) {
+    console.warn('subdistricts unavailable', e);
+  }
+}
+
+function showTambonLines(f) {
+  if (tambonLines) {
+    scene.remove(tambonLines.object);
+    tambonLines.dispose();
+    tambonLines = null;
+  }
+  const list = f && tambons?.get(f.code);
+  if (!list) return;
+  tambonLines = createDrapedLines(list.flatMap((t) => t.lines), {
+    color: '#ffffff', opacity: 0.3, maxStepDeg: 0.005, bias: 0.0025,
+  });
+  scene.add(tambonLines.object);
+  refreshLines();
+}
+
 function setHighlight(f) {
   if (provinces.highlight) {
     scene.remove(provinces.highlight.object);
@@ -222,6 +349,7 @@ async function enterProvince(i) {
   const prevExag = view ? view.prevExag : state.exaggeration;
   clearPins();
   setHighlight(f);
+  showTambonLines(f);
   if (!view) setExaggeration(PROVINCE_EXAG);
   $('province').value = String(i);
   $('province-info').textContent = `${f.name} (${f.nameEn}) · ${fmt(f.area)} ตร.กม.`;
@@ -253,6 +381,7 @@ function exitProvince({ fly = true } = {}) {
   const prevExag = view.prevExag;
   clearPins();
   setHighlight(null);
+  showTambonLines(null);
   view = null;
   setExaggeration(prevExag);
   $('pcard').hidden = true;
@@ -378,6 +507,7 @@ function refreshLines() {
     if (state.provinces) {
       provinces.lines.update(surfaceHeight, s);
       provinces.highlight?.update(surfaceHeight, s);
+      tambonLines?.update(surfaceHeight, s);
       for (const l of provinces.labels) {
         l.pos.copy(latLonToVec3(l.f.lat, l.f.lon, 1 + surfaceHeight(l.f.lat, l.f.lon) * s));
       }
@@ -416,7 +546,7 @@ function wantedTiles() {
   const spanLat = (2 * alt * Math.tan((camera.fov / 2) * d2r) * 1.25) / d2r * Math.max(1, 1 / camera.aspect);
   const spanLon = (spanLat * Math.max(1, camera.aspect)) / Math.max(Math.cos(lat * d2r), 0.2);
   const pixels = Math.min(renderer.domElement.width, 2560);
-  const minZoom = QUALITY[state.quality].zoom + 1;
+  const minZoom = baseZoom + 1;
   let z = Math.min(MAX_ZOOM, Math.round(Math.log2((pixels * 360) / (spanLon * 256))));
   for (; z >= minZoom; z--) {
     const n = 2 ** z;
@@ -447,14 +577,16 @@ async function loadPatch(t, { maxDim = 3072, segments = 320, onProgress = () => 
   });
   if (!merc || id !== detailId) return;
   await new Promise(requestAnimationFrame); // let the status text paint before heavy work
+  despike(merc);
   const bounds = {
     lonMin: tileLon(t.x0, t.z), lonMax: tileLon(t.x0 + t.nx, t.z),
     latMax: tileLat(t.y0, t.z), latMin: tileLat(t.y0 + t.ny, t.z),
   };
   const grid = reproject(merc, Math.min(merc.width, maxDim), Math.min(merc.height, maxDim), bounds);
-  if (t.z >= 10) patchSeaFromGlobe(grid);
+  if (t.z >= 10 && !THAI_MODE) patchSeaFromGlobe(grid); // /thai masks the sea anyway
   if (id !== detailId) return;
   const next = createSurface(grid, { segments });
+  if (thaiMask) next.setMask(thaiMask);
   if (patch) { scene.remove(patch.mesh); patch.dispose(); }
   patch = next;
   patchTiles = t;
@@ -572,7 +704,7 @@ $('scale-ticks').innerHTML = [9000, 6000, 3000, 0, -3000, -6000, -11000]
 
 // Highest / lowest point of the area currently drawn in detail (or the whole globe).
 function updateRange() {
-  const grid = patch?.grid ?? globe?.grid;
+  const grid = patch?.grid ?? (thaiExtent ? { ...thaiExtent } : globe?.grid);
   if (!grid) return;
   $('range-max').textContent = `${grid.max >= 0 ? '+' : ''}${fmt(grid.max)} ม.`;
   $('range-min').textContent = `${grid.min >= 0 ? '+' : ''}${fmt(grid.min)} ม.`;
@@ -603,24 +735,44 @@ function pick(clientX, clientY) {
   }
   if (!ll) return null;
   const grid = patch && contains(patch.grid, ll.lat, ll.lon) ? patch.grid : globe.grid;
-  return { ...ll, h: heightAt(grid, ll.lat, ll.lon), province: provinceAt(ll.lat, ll.lon) };
+  const province = provinceAt(ll.lat, ll.lon);
+  return { ...ll, h: heightAt(grid, ll.lat, ll.lon), province, tambon: tambonAt(province, ll.lat, ll.lon) };
 }
 
-// Point-in-polygon over province rings (even-odd), cheap enough for pointer moves.
-function provinceAt(lat, lon) {
-  if (!provinces) return null;
-  for (const f of provinces.features) {
-    let inside = false;
-    for (const ring of f.lines) {
-      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-        const [xi, yi] = ring[i];
-        const [xj, yj] = ring[j];
-        if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
-      }
+// Even-odd point-in-polygon over a feature's rings.
+function inRings(lines, lat, lon) {
+  let inside = false;
+  for (const ring of lines) {
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i];
+      const [xj, yj] = ring[j];
+      if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
     }
-    if (inside) return f;
   }
-  return null;
+  return inside;
+}
+
+function provinceAt(lat, lon) {
+  return provinces?.features.find((f) => inRings(f.lines, lat, lon)) ?? null;
+}
+
+function tambonAt(province, lat, lon) {
+  const list = province && tambons?.get(province.code);
+  if (!list) return null;
+  return list.find((t) => {
+    const b = t.bbox;
+    return lat >= b.latMin && lat <= b.latMax && lon >= b.lonMin && lon <= b.lonMax && inRings(t.lines, lat, lon);
+  }) ?? null;
+}
+
+// "ต.… อ.… จ.…" (Bangkok uses แขวง / เขต).
+function placeName(province, tambon) {
+  if (!province) return '';
+  const bkk = province.code === '10';
+  const parts = [];
+  if (tambon) parts.push(`${bkk ? 'แขวง' : 'ต.'}${tambon.name}`, `${bkk ? 'เขต' : 'อ.'}${tambon.amp}`);
+  parts.push(bkk ? province.name : `จ.${province.name}`);
+  return parts.join(' ');
 }
 
 function showReadout(p) {
@@ -638,7 +790,7 @@ function showReadout(p) {
   const ns = p.lat >= 0 ? 'N' : 'S';
   const ew = p.lon >= 0 ? 'E' : 'W';
   const below = state.water ? state.sea - p.h : -p.h;
-  $('readout-place').textContent = p.province ? `จ.${p.province.name}` : '';
+  $('readout-place').textContent = placeName(p.province, p.tambon);
   $('readout-coord').textContent =
     `${Math.abs(p.lat).toFixed(3)}°${ns}  ${Math.abs(p.lon).toFixed(3)}°${ew}`;
   $('readout-h').textContent = `${p.h >= 0 ? '+' : ''}${fmt(p.h)} ม.`;
@@ -774,4 +926,15 @@ addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);
 });
 
-loadQuality(state.quality).then(() => Promise.all([loadPlates(), loadProvinces()]));
+if (THAI_MODE) {
+  document.body.classList.add('thai');
+  state.plates = false;
+  $('plates').checked = false;
+  Promise.all([loadThailand(7, { preview: true }), loadProvinces()])
+    .then(() => { applyThaiMask(); refreshLines(); })
+    .then(() => Promise.all([loadThailand(9), loadSubdistricts()]));
+} else {
+  loadQuality(state.quality)
+    .then(() => Promise.all([loadPlates(), loadProvinces()]))
+    .then(loadSubdistricts);
+}
