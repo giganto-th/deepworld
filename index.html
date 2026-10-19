@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DeepWorld — ลูกโลก 3D เปลือกโลก</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --bg: #04070f;
+      --panel: rgba(12, 18, 32, 0.82);
+      --border: rgba(140, 170, 220, 0.18);
+      --text: #e6ecf7;
+      --muted: #93a1bb;
+      --accent: #5aa9ff;
+      --plate: #ff5a36;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+    body {
+      background: radial-gradient(ellipse at 50% 40%, #0b1426 0%, var(--bg) 70%);
+      color: var(--text);
+      font: 14px/1.5 'IBM Plex Sans Thai', system-ui, sans-serif;
+    }
+    #app, #app canvas { position: fixed; inset: 0; display: block; }
+
+    header {
+      position: fixed; top: 16px; left: 16px; right: 16px;
+      display: flex; align-items: center; gap: 12px; pointer-events: none;
+    }
+    header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 0.02em; }
+    header span { color: var(--muted); font-size: 13px; }
+
+    #panel {
+      position: fixed; top: 60px; left: 16px; width: 280px;
+      max-height: calc(100% - 140px); overflow: auto;
+      background: var(--panel); backdrop-filter: blur(10px);
+      border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+    }
+    #panel.collapsed .body { display: none; }
+    #panel .head { display: flex; justify-content: space-between; align-items: center; }
+    #panel h2 { margin: 0; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    #toggle-panel { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 16px; padding: 2px 6px; }
+    .row { margin-top: 12px; }
+    .row label { display: flex; justify-content: space-between; font-size: 13px; }
+    .row label output { color: var(--accent); font-variant-numeric: tabular-nums; }
+    input[type=range] { width: 100%; accent-color: var(--accent); }
+    input[type=range]:disabled { opacity: 0.35; }
+    .check { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; cursor: pointer; }
+    .check input { accent-color: var(--accent); }
+    .swatch { display: inline-block; width: 14px; height: 3px; background: var(--plate); border-radius: 2px; }
+    select {
+      width: 100%; margin-top: 4px; padding: 6px 8px; border-radius: 8px;
+      background: #0d1526; color: var(--text); border: 1px solid var(--border); font: inherit;
+    }
+    .places { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+    .places button {
+      padding: 7px 8px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12.5px;
+      background: rgba(90, 169, 255, 0.1); color: var(--text); border: 1px solid var(--border);
+    }
+    .places button:hover { background: rgba(90, 169, 255, 0.22); }
+    hr { border: 0; border-top: 1px solid var(--border); margin: 14px 0 0; }
+    #stats { margin-top: 12px; color: var(--muted); font-size: 11.5px; }
+
+    #legend {
+      position: fixed; left: 16px; bottom: 16px; width: 280px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+      font-size: 11.5px; color: var(--muted);
+    }
+    #legend-bar { height: 10px; border-radius: 3px; margin: 6px 0 4px; }
+    #legend .ticks { position: relative; height: 16px; font-variant-numeric: tabular-nums; }
+    #legend .ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+    #legend .ticks span:first-child { transform: none; }
+    #legend .ticks span:last-child { transform: translateX(-100%); }
+
+    #readout {
+      position: fixed; right: 16px; bottom: 16px; min-width: 190px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px;
+    }
+    #readout-coord { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+    #readout-h { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    #readout-note { color: var(--muted); font-size: 12px; }
+
+    #attrib { position: fixed; right: 16px; top: 18px; font-size: 11px; color: var(--muted); text-align: right; }
+    #attrib a { color: var(--muted); }
+
+    #loading {
+      position: fixed; inset: 0; display: grid; place-items: center; background: rgba(4, 7, 15, 0.55);
+    }
+    #loading[hidden] { display: none; }
+    #loading .box { text-align: center; }
+    #loading progress { width: 240px; accent-color: var(--accent); }
+
+    @media (max-width: 640px) {
+      header span, #attrib { display: none; }
+      #panel { top: auto; bottom: 16px; left: 16px; right: 16px; width: auto; max-height: 50%; }
+      #legend { bottom: auto; top: 52px; left: 16px; right: 16px; width: auto; }
+      #readout { bottom: auto; top: 120px; right: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <header>
+    <h1>DeepWorld</h1>
+    <span>ความสูงของเปลือกโลก ทั้งบนบกและใต้มหาสมุทร</span>
+  </header>
+
+  <div id="attrib">
+    ข้อมูลความสูง: <a href="https://registry.opendata.aws/terrain-tiles" target="_blank" rel="noopener">AWS Terrain Tiles</a>
+    (SRTM, GMTED, ETOPO1)<br />
+    รอยต่อแผ่นเปลือกโลก: <a href="https://github.com/fraxen/tectonicplates" target="_blank" rel="noopener">PB2002, Bird 2003</a>
+  </div>
+
+  <aside id="panel">
+    <div class="head">
+      <h2>การแสดงผล</h2>
+      <button id="toggle-panel" aria-label="ย่อ/ขยายแผง">☰</button>
+    </div>
+    <div class="body">
+      <div class="row">
+        <label for="exag">ขยายความสูง <output id="exag-val"></output></label>
+        <input id="exag" type="range" min="1" max="100" step="1" />
+      </div>
+      <div class="row">
+        <label for="relief">ความเข้มของเงา <output id="relief-val"></output></label>
+        <input id="relief" type="range" min="0" max="30" step="1" />
+      </div>
+      <label class="check"><input id="water" type="checkbox" /> แสดงน้ำทะเล</label>
+      <div class="row">
+        <label for="sea">ระดับน้ำทะเล <output id="sea-val"></output></label>
+        <input id="sea" type="range" min="-6000" max="3000" step="10" />
+      </div>
+      <label class="check"><input id="plates" type="checkbox" /> <span class="swatch"></span> รอยต่อแผ่นเปลือกโลก</label>
+      <div class="row">
+        <label for="quality">ความละเอียด</label>
+        <select id="quality">
+          <option value="low">ต่ำ (~40 กม./พิกเซล)</option>
+          <option value="medium">กลาง (~20 กม./พิกเซล)</option>
+          <option value="high">สูง (~10 กม./พิกเซล)</option>
+        </select>
+      </div>
+      <hr />
+      <div class="row"><label>บินไปยัง</label></div>
+      <div class="places">
+        <button data-place="everest">ยอดเอเวอเรสต์</button>
+        <button data-place="mariana">ร่องลึกมาเรียนา</button>
+        <button data-place="atlantic">สันเขากลางแอตแลนติก</button>
+        <button data-place="andes">เทือกเขาแอนดีส</button>
+        <button data-place="himalaya">ที่ราบสูงทิเบต</button>
+        <button data-place="thailand">ประเทศไทย</button>
+      </div>
+      <div id="stats"></div>
+    </div>
+  </aside>
+
+  <div id="legend">
+    ความสูง (เมตร)
+    <div id="legend-bar"></div>
+    <div class="ticks">
+      <span style="left:0%">−11,000</span><span style="left:30%">−5,000</span><span style="left:55%">0</span><span style="left:75%">+4,000</span><span style="left:100%">+9,000</span>
+    </div>
+  </div>
+
+  <div id="readout" hidden>
+    <div id="readout-coord"></div>
+    <div id="readout-h"></div>
+    <div id="readout-note"></div>
+  </div>
+
+  <div id="loading">
+    <div class="box">
+      <div id="loading-text">กำลังเริ่มต้น…</div>
+      <progress id="progress" max="1" value="0"></progress>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
