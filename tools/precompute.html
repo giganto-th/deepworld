@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DeepWorld — คำนวณจุดสูงสุด/ต่ำสุดรายจังหวัด</title>
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js" } }
+  </script>
+  <style>
+    body { margin: 0; padding: 24px; background: #05070d; color: #e8edf7; font: 14px/1.5 system-ui, sans-serif; }
+    main { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+    h1 { margin: 0; font-size: 20px; }
+    p { margin: 0; color: #9aa6bd; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    button { height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #7dd3fc; background: rgba(125, 211, 252, 0.12); color: inherit; font: inherit; cursor: pointer; }
+    button:disabled { opacity: 0.5; cursor: default; }
+    pre, textarea { margin: 0; padding: 12px; border-radius: 10px; background: #0d1526; border: 1px solid rgba(160, 180, 220, 0.2); color: inherit; font: 12px/1.5 ui-monospace, monospace; }
+    pre { height: 280px; overflow: auto; white-space: pre-wrap; }
+    textarea { height: 240px; width: 100%; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>คำนวณจุดสูงสุด/ต่ำสุดรายจังหวัด</h1>
+    <p>โหลดข้อมูลความสูงละเอียดของทุกจังหวัดแบบเดียวกับมุมมอง 3D แล้วหาจุดสูงสุดและต่ำสุดบนบก ตั้งชื่อจุดสูงสุดจากยอดเขาใน OpenStreetMap ที่อยู่ใกล้ที่สุด
+      ใช้เวลาหลายสิบนาที · ใส่ <code>?only=50,57</code> เพื่อคำนวณเฉพาะบางจังหวัด · บันทึกผลเป็น <code>data/province-extremes.json</code></p>
+    <div class="row">
+      <button type="button" id="start">เริ่มคำนวณ</button>
+      <button type="button" id="download" disabled>ดาวน์โหลด JSON</button>
+      <span id="progress"></span>
+    </div>
+    <pre id="log" aria-live="polite"></pre>
+    <label for="output">ผลลัพธ์</label>
+    <textarea id="output" readonly></textarea>
+  </main>
+  <script type="module" src="precompute.js"></script>
+</body>
+</html>

@@ -1,4 +1,34 @@
 import * as THREE from 'three';
+import { lonToTileX, latToTileY } from './elevation.js';
+
+// Tiles covering a province's bounds at the finest zoom that fits `maxTiles` and the GPU
+// texture size (the province view's detail patch, also used by tools/precompute.html).
+export function provinceTileRange(b, { maxDim = 8192, maxTiles = 240, maxZoom = 12 } = {}) {
+  const padLat = (b.latMax - b.latMin) * 0.06;
+  const padLon = (b.lonMax - b.lonMin) * 0.06;
+  for (let z = maxZoom; z >= 5; z--) {
+    const x0 = Math.floor(lonToTileX(b.lonMin - padLon, z));
+    const x1 = Math.floor(lonToTileX(b.lonMax + padLon, z));
+    const y0 = Math.floor(latToTileY(b.latMax + padLat, z));
+    const y1 = Math.floor(latToTileY(b.latMin - padLat, z));
+    const t = { z, x0, y0, nx: x1 - x0 + 1, ny: y1 - y0 + 1 };
+    if (t.nx * t.ny <= maxTiles && t.nx * 256 <= maxDim && t.ny * 256 <= maxDim) return t;
+  }
+  return null;
+}
+
+// Even-odd point-in-polygon over a feature's rings ([lon, lat] arrays).
+export function inRings(lines, lat, lon) {
+  let inside = false;
+  for (const ring of lines) {
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i];
+      const [xj, yj] = ring[j];
+      if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+    }
+  }
+  return inside;
+}
 
 // Lat/lon bounding box of a province's rings.
 export function bbox(f) {
@@ -17,7 +47,7 @@ export function bbox(f) {
 // Lowest point counts land at or above sea level; values below are sea or coastal data noise.
 const LAND_MIN = 0;
 
-// Highest and lowest (on land) grid samples inside the province polygon.
+// Highest and lowest (on land) points inside the province polygon, plus a height histogram.
 // The polygon is rasterized onto the grid with a canvas (even-odd fill handles holes),
 // which is far cheaper than a point-in-polygon test per sample.
 export function extremes(f, grid) {
@@ -42,25 +72,55 @@ export function extremes(f, grid) {
   ctx.fill('evenodd');
   const mask = ctx.getImageData(0, 0, W, H).data;
 
-  let hi = -Infinity, lo = Infinity, hiIdx = -1, loIdx = -1;
+  // Pass 1: highest sample, and a 1 m histogram of land heights.
+  const inside = (y, x) => mask[(y * W + x) * 4 + 3] >= 128;
+  let hi = -Infinity;
+  let hiIdx = -1;
+  const meters = new Uint32Array(9000);
+  let land = 0;
   for (let y = 0; y < H; y++) {
     const row = (H - 1 - y) * W; // grid row 0 = south
     for (let x = 0; x < W; x++) {
-      if (mask[(y * W + x) * 4 + 3] < 128) continue;
+      if (!inside(y, x)) continue;
       const h = data[row + x];
       if (h > hi) { hi = h; hiIdx = row + x; }
-      // Lowest point on land: coastal outlines include some sea, which is not "the province's" low.
-      if (h < lo && h >= LAND_MIN) { lo = h; loIdx = row + x; }
+      // Coastal outlines include some sea, which is not "the province's" low.
+      if (h >= LAND_MIN) { meters[Math.min(8999, Math.floor(h))]++; land++; }
     }
   }
   if (hiIdx < 0) return null;
+
+  // The lowest land is noisier than the peak (coastal fringes, residual pits), so it is the
+  // lowest height above the bottom 0.1 % of land samples rather than the single lowest one.
+  let floor = 0;
+  for (let m = 0, seen = 0; m < meters.length; m++) {
+    seen += meters[m];
+    if (seen > land * 0.001) { floor = m; break; }
+  }
+  // Pass 2: the sample closest to that floor (from above).
+  let lo = Infinity;
+  let loIdx = -1;
+  for (let y = 0; y < H; y++) {
+    const row = (H - 1 - y) * W;
+    for (let x = 0; x < W; x++) {
+      if (!inside(y, x)) continue;
+      const h = data[row + x];
+      if (h >= floor && h < lo) { lo = h; loIdx = row + x; }
+    }
+  }
   if (loIdx < 0) { loIdx = hiIdx; lo = hi; }
   const at = (idx, h) => ({
     lat: grid.latMin + ((Math.floor(idx / W) + 0.5) / H) * (grid.latMax - grid.latMin),
     lon: grid.lonMin + (((idx % W) + 0.5) / W) * (grid.lonMax - grid.lonMin),
     h,
   });
-  return { max: at(hiIdx, hi), min: at(loIdx, lo) };
+  const BINS = 14;
+  const hist = new Array(BINS).fill(0);
+  const span = Math.max(1, hi - lo);
+  meters.forEach((n, m) => {
+    if (n && m >= lo) hist[Math.min(BINS - 1, Math.floor(((m + 0.5 - lo) / span) * BINS))] += n;
+  });
+  return { max: at(hiIdx, hi), min: at(loIdx, lo), hist };
 }
 
 // A map pin: a stem rising from the ground and a round head that keeps

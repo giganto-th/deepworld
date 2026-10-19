@@ -28,7 +28,7 @@ jobs:
       - name: Build site
         run: |
           mkdir -p _site/thai
-          cp -r index.html src _site/
+          cp -r index.html src data _site/
           sed 's|<head>|<head>\n  <base href="../">|' index.html > _site/thai/index.html
 
       - uses: actions/configure-pages@v5

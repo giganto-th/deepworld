@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DeepWorld — ลูกโลก 3D เปลือกโลก</title>
+  <title>DeepWorld — ภูมิประเทศ 3 มิติ</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
   <script type="importmap">
     {
       "imports": {
@@ -16,302 +16,644 @@
   </script>
   <style>
     :root {
-      --bg: #04070f;
-      --panel: rgba(12, 18, 32, 0.82);
-      --border: rgba(140, 170, 220, 0.18);
-      --text: #e6ecf7;
-      --muted: #93a1bb;
-      --accent: #5aa9ff;
-      --plate: #ff5a36;
-      --cursor: #ffd34d;
+      --bg: #05070d;
+      --glass: rgba(12, 17, 29, 0.84);
+      --glass-strong: rgba(12, 17, 29, 0.94);
+      --line: rgba(160, 180, 220, 0.16);
+      --line-strong: rgba(160, 180, 220, 0.28);
+      --text: #e8edf7;
+      --muted: #9aa6bd;
+      --soft: #b4bfd3;
+      --accent: #7dd3fc;
+      --accent-bg: rgba(125, 211, 252, 0.16);
+      --cursor: #ffd166;
+      --hi: #ff8a70;
+      --hi-soft: #ffb4a3;
+      --lo: #5fa8ff;
+      --lo-soft: #a9ccff;
+      --mono: 'IBM Plex Mono', ui-monospace, monospace;
+      --radius: 14px;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; overflow: hidden; }
     body {
-      background: radial-gradient(ellipse at 50% 40%, #0b1426 0%, var(--bg) 70%);
+      background: var(--bg);
       color: var(--text);
       font: 14px/1.5 'IBM Plex Sans Thai', system-ui, sans-serif;
     }
-    #app, #app canvas { position: fixed; inset: 0; display: block; }
+    button, input, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    [hidden] { display: none !important; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    body:not(.thai) [data-thai-only], body.thai [data-world-only] { display: none !important; }
+    body:not(.province) [data-province-only], body.province [data-globe-only] { display: none !important; }
 
-    header {
-      position: fixed; top: 16px; left: 16px; right: 16px;
+    #app, #app canvas { position: fixed; inset: 0; display: block; }
+    .glass {
+      background: var(--glass);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .icon-btn {
+      width: 48px; height: 48px; border-radius: var(--radius); display: grid; place-items: center;
+      background: var(--glass); border: 1px solid var(--line);
+    }
+    .icon-btn:hover { border-color: var(--line-strong); }
+    .ghost-btn {
+      height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line-strong);
+      background: transparent;
+    }
+    .ghost-btn:hover { background: rgba(160, 180, 220, 0.08); }
+    input[type=range] { width: 100%; margin: 0; accent-color: var(--accent); }
+    input[type=checkbox] { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); flex: none; }
+
+    /* ---------- top bar ---------- */
+    .topbar {
+      position: fixed; top: 16px; left: 16px; right: 16px; z-index: 5;
       display: flex; align-items: center; gap: 12px; pointer-events: none;
     }
-    header h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 0.02em; }
-    header nav { pointer-events: auto; }
-    header nav a {
-      padding: 4px 10px; border-radius: 999px; font-size: 12.5px; text-decoration: none;
-      color: var(--text); background: rgba(90, 169, 255, 0.14); border: 1px solid var(--border);
+    .topbar > * { pointer-events: auto; }
+    .brand { display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px 0 10px; border-radius: var(--radius); }
+    .brand b { font-size: 16px; font-weight: 600; letter-spacing: 0.01em; }
+    .segmented { display: flex; gap: 4px; padding: 4px; height: 48px; border-radius: var(--radius); }
+    .segmented a {
+      display: flex; align-items: center; padding: 0 14px; border-radius: 10px;
+      color: var(--soft); text-decoration: none; white-space: nowrap;
     }
-    body:not(.thai) [data-thai-only], body.thai [data-world-only] { display: none; }
-    header span { color: var(--muted); font-size: 13px; }
+    .segmented a[aria-current="page"] { background: var(--accent-bg); color: var(--text); font-weight: 500; }
+    .crumbs { display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 16px; border-radius: var(--radius); white-space: nowrap; }
+    .crumbs button { border: 0; background: none; padding: 0; color: #9fd8ff; }
+    .crumbs .sep { color: #6f7c95; }
+    .crumbs .here { font-weight: 600; }
+    .search { position: relative; flex: 1 1 320px; max-width: 520px; min-width: 0; }
+    .search label { min-width: 0; display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 14px; border-radius: var(--radius); }
+    .search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; }
+    .search input::placeholder { color: var(--muted); }
+    .search input::-webkit-search-cancel-button { display: none; }
+    kbd {
+      font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+      border: 1px solid var(--line-strong); border-radius: 6px; padding: 0 6px;
+    }
+    #search-list {
+      position: absolute; top: 54px; left: 0; right: 0; margin: 0; padding: 6px; list-style: none;
+      border-radius: var(--radius); background: var(--glass-strong); border: 1px solid var(--line);
+      max-height: 360px; overflow: auto;
+    }
+    #search-list li { display: flex; flex-direction: column; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+    #search-list li span { color: var(--muted); font-size: 12.5px; }
+    #search-list li[aria-selected="true"], #search-list li:hover { background: var(--accent-bg); }
+    .spacer { flex: 1 1 0; min-width: 0; }
+    .status {
+      display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 999px;
+      font-size: 12.5px; color: var(--soft); white-space: nowrap; max-width: 380px; min-width: 150px; overflow: hidden; flex: 0 1 auto;
+    }
+    @media (max-width: 1100px) { .search { flex-basis: 220px; } .search kbd { display: none; } }
+    @media (max-height: 640px) { .camstack .zoom { display: none; } }
+    @media (min-width: 721px) and (max-width: 1180px) { body.province .hud { display: none; } }
+    .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; animation: pulse 1.4s ease-in-out infinite; }
+    #status-text { overflow: hidden; text-overflow: ellipsis; }
+    #status-bar { width: 64px; height: 4px; border-radius: 4px; background: rgba(160, 180, 220, 0.2); overflow: hidden; flex: none; }
+    #status-bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.2s; }
+    @keyframes pulse { 50% { opacity: 0.35; } }
+    @media (prefers-reduced-motion: reduce) { .status .dot { animation: none; } }
 
-    #panel {
-      position: fixed; top: 60px; left: 16px; width: 280px;
-      max-height: calc(100% - 140px); overflow: auto;
-      background: var(--panel); backdrop-filter: blur(10px);
-      border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px;
+    /* ---------- info popover ---------- */
+    #info {
+      position: fixed; top: 76px; right: 16px; z-index: 6; width: min(380px, calc(100% - 32px));
+      padding: 16px; border-radius: 16px; background: var(--glass-strong); border: 1px solid var(--line);
+      display: flex; flex-direction: column; gap: 10px; font-size: 13px;
     }
-    #panel.collapsed .body { display: none; }
-    #panel .head { display: flex; justify-content: space-between; align-items: center; }
-    #panel h2 { margin: 0; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-    #toggle-panel { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 16px; padding: 2px 6px; }
-    .row { margin-top: 12px; }
-    .row label { display: flex; justify-content: space-between; font-size: 13px; }
-    .row label output { color: var(--accent); font-variant-numeric: tabular-nums; }
-    input[type=range] { width: 100%; accent-color: var(--accent); }
-    input[type=range]:disabled { opacity: 0.35; }
-    .check { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; cursor: pointer; }
-    .check input { accent-color: var(--accent); }
-    .swatch { display: inline-block; width: 14px; height: 3px; background: var(--plate); border-radius: 2px; }
+    #info h2 { margin: 0; font-size: 15px; }
+    #info ul { margin: 0; padding-left: 18px; color: var(--soft); }
+    #info a { color: #9fd8ff; }
+    #info p { margin: 0; color: var(--muted); font-size: 12.5px; }
+
+    /* ---------- left rail + drawers ---------- */
+    .rail {
+      position: fixed; top: 88px; left: 16px; z-index: 4;
+      display: flex; flex-direction: column; gap: 6px; padding: 6px; border-radius: 16px;
+    }
+    body.province .rail { display: none; }
+    .rail button {
+      width: 60px; height: 60px; border: 0; border-radius: 12px; background: transparent;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      font-size: 11px; color: var(--soft);
+    }
+    .rail button svg { stroke: currentColor; }
+    .rail button[aria-pressed="true"] { background: var(--accent-bg); color: var(--text); }
+    .rail button[aria-pressed="true"] svg { stroke: var(--accent); }
+    .drawer {
+      position: fixed; top: 88px; left: 96px; z-index: 4; width: 300px; max-height: calc(100% - 180px); overflow: auto;
+      padding: 16px; border-radius: 16px; display: flex; flex-direction: column; gap: 16px;
+      background: rgba(12, 17, 29, 0.9);
+    }
+    .drawer-head { display: flex; justify-content: space-between; align-items: center; }
+    .drawer-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+    .drawer-close { width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; display: grid; place-items: center; }
+    .drawer-close:hover { background: rgba(160, 180, 220, 0.1); }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+    .field-label output { font-family: var(--mono); color: var(--accent); }
+    .check { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13px; cursor: pointer; min-height: 28px; }
+    .check .swatch { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 8px; vertical-align: middle; }
+    .group { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .hint { margin: 0; font-size: 12px; color: var(--muted); font-weight: 400; }
+    .ramps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .ramps button {
+      padding: 6px; border-radius: 10px; border: 1px solid var(--line-strong); background: transparent;
+      display: flex; flex-direction: column; gap: 5px; font-size: 11.5px; color: var(--soft);
+    }
+    .ramps button span { height: 8px; border-radius: 3px; }
+    .ramps button[aria-pressed="true"] { border-color: var(--accent); background: rgba(125, 211, 252, 0.1); color: var(--text); }
     select {
-      width: 100%; margin-top: 4px; padding: 6px 8px; border-radius: 8px;
-      background: #0d1526; color: var(--text); border: 1px solid var(--border); font: inherit;
+      width: 100%; height: 38px; padding: 0 10px; border-radius: 10px;
+      background: #0d1526; border: 1px solid var(--line-strong);
     }
-    .places { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
-    .places button {
-      padding: 7px 8px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12.5px;
-      background: rgba(90, 169, 255, 0.1); color: var(--text); border: 1px solid var(--border);
+    .presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+    .presets button {
+      min-height: 40px; padding: 6px 8px; border-radius: 10px; font-size: 12.5px;
+      background: rgba(125, 211, 252, 0.08); border: 1px solid var(--line);
     }
-    .places button:hover { background: rgba(90, 169, 255, 0.22); }
-    hr { border: 0; border-top: 1px solid var(--border); margin: 14px 0 0; }
-    #stats { margin-top: 4px; color: var(--muted); font-size: 11.5px; }
-    #detail { margin-top: 12px; color: var(--accent); font-size: 11.5px; }
-    #province-info { margin-top: 4px; color: var(--muted); font-size: 11.5px; min-height: 1em; }
-    .swatch.prov { background: #fff; }
-    #labels { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
-    header, #attrib, #panel, #scale, #loading { z-index: 2; }
-    #labels[hidden] { display: none; }
-    .label {
-      position: absolute; left: 0; top: 0; white-space: nowrap;
-      font-size: 12px; font-weight: 500; color: #fff;
-      text-shadow: 0 0 3px #000, 0 0 6px #000;
+    .filter { height: 38px; padding: 0 12px; border-radius: 10px; background: #0d1526; border: 1px solid var(--line-strong); outline: none; }
+    .place-list { display: flex; flex-direction: column; gap: 2px; }
+    .place-list h3 { margin: 10px 0 4px; font-size: 12px; font-weight: 500; color: var(--muted); }
+    .row-btn {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 40px; padding: 0 10px;
+      border: 0; border-radius: 10px; background: transparent; text-align: left;
     }
-    /* Province 3D view card (top center) and pin labels */
-    #pcard {
-      position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 2;
-      width: min(440px, calc(100% - 32px));
-      background: var(--panel); backdrop-filter: blur(10px);
-      border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+    .row-btn:hover, .row-btn[aria-current="true"] { background: rgba(160, 180, 220, 0.08); }
+    .row-btn small { color: var(--muted); font-family: var(--mono); font-size: 11.5px; }
+
+    /* ---------- legend (right) ---------- */
+    .legend {
+      position: fixed; right: 16px; top: 88px; z-index: 3; width: 132px;
+      padding: 14px 14px 12px; border-radius: 16px; display: flex; flex-direction: column; gap: 10px;
     }
-    #pcard[hidden] { display: none; }
-    #pcard .head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
-    #pc-name { font-size: 17px; font-weight: 600; }
-    #pc-sub, #pc-res, #pcard .hint { color: var(--muted); font-size: 11.5px; }
-    #pc-close {
-      flex: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12.5px;
-      background: rgba(90, 169, 255, 0.12); color: var(--text); border: 1px solid var(--border);
+    .legend .cap { font-size: 12px; color: var(--muted); }
+    .legend-body { position: relative; height: clamp(120px, calc(100vh - 360px), 300px); display: flex; gap: 10px; }
+    #legend-bar { width: 12px; border-radius: 4px; flex: none; }
+    #legend-ticks { position: relative; flex: 1; font-family: var(--mono); font-size: 11.5px; color: var(--soft); }
+    #legend-ticks span { position: absolute; transform: translateY(-50%); white-space: nowrap; }
+    #legend-ticks .end-max { color: var(--hi-soft); }
+    #legend-ticks .end-min { color: var(--lo-soft); }
+    #legend-mark { position: absolute; left: -12px; width: 30px; height: 0; border-top: 2px solid var(--cursor); }
+    #legend-mark::before {
+      content: ''; position: absolute; left: 0; top: -7px;
+      border: 6px solid transparent; border-left: 8px solid var(--cursor); border-right: 0;
     }
-    #pcard .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 6px; }
-    #pcard .stat b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
-    #pcard .stat span { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-    #pcard .stat.hi { color: #ff7a7a; }
-    #pcard .stat.lo { color: #6cb6ff; }
-    #pins { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+    .toggle2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 3px; border-radius: 10px; background: rgba(160, 180, 220, 0.08); }
+    .toggle2 button { border: 0; border-radius: 7px; padding: 4px 0; font-size: 11.5px; background: transparent; color: var(--soft); }
+    .toggle2 button[aria-pressed="true"] { background: rgba(125, 211, 252, 0.18); color: var(--text); }
+
+    /* ---------- HUD, scale bar, camera ---------- */
+    .hud {
+      position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 3;
+      display: flex; align-items: center; gap: 16px; padding: 10px 18px; border-radius: 999px;
+      white-space: nowrap; max-width: calc(100% - 440px); overflow: hidden;
+    }
+    body.province .hud { left: calc(50% + 188px); bottom: 84px; max-width: calc(100% - 560px); }
+    .hud .sep { width: 1px; height: 18px; background: var(--line-strong); flex: none; }
+    #hud-place { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+    #hud-coord { font-family: var(--mono); font-size: 13px; color: var(--soft); }
+    #hud-h { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--cursor); }
+    .hud.idle #hud-place { font-weight: 400; color: var(--muted); }
+    .corner-left {
+      position: fixed; left: 16px; bottom: 20px; z-index: 3;
+      display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: var(--soft);
+    }
+    body.province .corner-left { left: 392px; }
+    #scalebar { display: flex; align-items: end; gap: 8px; }
+    #scalebar-line { height: 6px; border: 1.5px solid #c9d3e6; border-top: 0; }
+    #scalebar-text { font-family: var(--mono); }
+    .credit { border: 0; background: none; padding: 0; color: #9fd8ff; font-size: 12px; text-align: left; }
+    .camstack { position: fixed; right: 16px; bottom: 20px; z-index: 3; display: flex; flex-direction: column; gap: 8px; }
+    .zoom { display: flex; flex-direction: column; border-radius: var(--radius); overflow: hidden; }
+    .zoom button { width: 48px; height: 46px; border: 0; background: transparent; font-size: 20px; }
+    .zoom hr { margin: 0; border: 0; border-top: 1px solid var(--line); }
+    .cambar {
+      position: fixed; right: 80px; bottom: 20px; z-index: 3;
+      display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 16px;
+    }
+    .cambar label { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--soft); width: 230px; }
+    .cambar label > span { white-space: nowrap; }
+    .cambar output { font-family: var(--mono); color: var(--text); min-width: 3ch; }
+    .cambar .icon-btn { width: 44px; height: 44px; border-radius: 12px; }
+    .cambar .icon-btn[aria-pressed="true"] { background: var(--accent-bg); border-color: var(--accent); }
+
+    /* ---------- province inspector ---------- */
+    .inspector {
+      position: fixed; top: 88px; left: 16px; bottom: 16px; z-index: 4; width: 360px;
+      padding: 20px; border-radius: 18px; overflow: auto;
+      display: flex; flex-direction: column; gap: 18px; background: rgba(12, 17, 29, 0.9);
+    }
+    .inspector h1 { margin: 0; font-size: 26px; font-weight: 600; line-height: 1.2; }
+    #pi-sub { margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .extremes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .xcard { padding: 12px; border-radius: 14px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .xcard.hi { background: rgba(255, 138, 112, 0.1); border: 1px solid rgba(255, 138, 112, 0.35); }
+    .xcard.lo { background: rgba(95, 168, 255, 0.1); border: 1px solid rgba(95, 168, 255, 0.35); }
+    .xcard .k { font-size: 12px; }
+    .xcard.hi .k { color: var(--hi-soft); }
+    .xcard.lo .k { color: var(--lo-soft); }
+    .xcard .v { font-family: var(--mono); font-size: 22px; font-weight: 500; }
+    .xcard .n { font-size: 12.5px; }
+    .xcard .c { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+    .xcard button { margin-top: auto; height: 34px; border-radius: 9px; background: transparent; font-size: 12.5px; }
+    .xcard.hi button { border: 1px solid rgba(255, 138, 112, 0.45); }
+    .xcard.lo button { border: 1px solid rgba(95, 168, 255, 0.45); }
+    .hist { height: 72px; display: flex; align-items: end; gap: 3px; padding: 8px; border-radius: 12px; background: rgba(160, 180, 220, 0.06); }
+    .hist span { flex: 1; border-radius: 3px 3px 0 0; min-height: 2px; }
+    .hist-axis { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .note { padding: 8px 10px; border-radius: 10px; background: rgba(255, 209, 102, 0.08); border: 1px solid rgba(255, 209, 102, 0.25); font-size: 12px; color: #f2dca6; }
+    .note button { border: 0; background: none; padding: 0; color: var(--cursor); text-decoration: underline; font-size: 12px; }
+
+    /* ---------- labels & pins ---------- */
+    #labels, #pins { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+    .label { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 12px; font-weight: 500; color: #fff; text-shadow: 0 0 3px #000, 0 0 6px #000; }
     .pin-label {
       position: absolute; left: 0; top: 0; white-space: nowrap; text-align: center;
-      padding: 4px 8px; border-radius: 8px; font-size: 11.5px; color: #fff;
-      background: rgba(10, 14, 24, 0.85); border: 1px solid currentColor;
+      padding: 5px 10px; border-radius: 10px; font-size: 11.5px; background: rgba(12, 17, 29, 0.9); border: 1px solid currentColor;
     }
-    .pin-label b { display: block; font-size: 13px; color: #fff; }
-    .pin-label.hi { color: #ff6b6b; }
-    .pin-label.lo { color: #4da3ff; }
-    #readout-place { font-weight: 600; }
+    .pin-label b { display: block; font-family: var(--mono); font-size: 13px; font-weight: 500; color: #fff; }
+    .pin-label.hi { color: var(--hi); }
+    .pin-label.lo { color: var(--lo); }
 
-    /* Bottom-right: cursor readout + vertical elevation scale (max on top, min at bottom). */
-    #scale {
-      position: fixed; right: 16px; bottom: 16px; display: flex; gap: 14px; align-items: stretch;
-      background: var(--panel); backdrop-filter: blur(10px);
-      border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+    /* ---------- world top-10 ---------- */
+    #pois { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 2; }
+    .poi {
+      position: absolute; left: 0; top: 0; pointer-events: auto; white-space: nowrap;
+      display: flex; align-items: center; gap: 6px; padding: 3px 9px 3px 3px; border-radius: 999px;
+      background: rgba(12, 17, 29, 0.88); border: 1px solid currentColor; font-size: 12px; color: var(--hi);
     }
-    #scale .text { width: 170px; display: flex; flex-direction: column; }
-    #scale .title { color: var(--muted); font-size: 11.5px; }
-    /* Province 3D view card (top center) and pin labels */
-    #pcard {
-      position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 2;
-      width: min(440px, calc(100% - 32px));
-      background: var(--panel); backdrop-filter: blur(10px);
-      border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+    .poi.deep { color: #b79cff; }
+    .poi b {
+      display: grid; place-items: center; min-width: 20px; height: 20px; border-radius: 999px; padding: 0 5px;
+      background: currentColor; font: 500 11px/1 var(--mono);
     }
-    #pcard[hidden] { display: none; }
-    #pcard .head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
-    #pc-name { font-size: 17px; font-weight: 600; }
-    #pc-sub, #pc-res, #pcard .hint { color: var(--muted); font-size: 11.5px; }
-    #pc-close {
-      flex: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12.5px;
-      background: rgba(90, 169, 255, 0.12); color: var(--text); border: 1px solid var(--border);
+    .poi b span { color: #0b0f19; }
+    .poi .t { color: var(--text); }
+    .poi .t small { margin-left: 4px; font-family: var(--mono); color: var(--soft); }
+    .poi.compact { padding-right: 3px; }
+    .poi.compact .t { display: none; }
+    .poi[aria-pressed="true"] { box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.55); }
+    .poi-card {
+      position: fixed; left: 96px; bottom: 76px; z-index: 4; width: 320px; max-height: calc(100% - 170px); overflow: auto;
+      padding: 16px; border-radius: 16px; display: flex; flex-direction: column; gap: 6px;
+      background: rgba(12, 17, 29, 0.92);
     }
-    #pcard .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 6px; }
-    #pcard .stat b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
-    #pcard .stat span { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-    #pcard .stat.hi { color: #ff7a7a; }
-    #pcard .stat.lo { color: #6cb6ff; }
-    #pins { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
-    .pin-label {
-      position: absolute; left: 0; top: 0; white-space: nowrap; text-align: center;
-      padding: 4px 8px; border-radius: 8px; font-size: 11.5px; color: #fff;
-      background: rgba(10, 14, 24, 0.85); border: 1px solid currentColor;
-    }
-    .pin-label b { display: block; font-size: 13px; color: #fff; }
-    .pin-label.hi { color: #ff6b6b; }
-    .pin-label.lo { color: #4da3ff; }
-    #readout-place { font-weight: 600; min-height: 1.5em; margin-top: 4px; }
-    #readout-coord { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-    #readout-h { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--cursor); }
-    #readout-note { color: var(--muted); font-size: 12px; }
-    #scale .range { margin-top: auto; padding-top: 10px; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-    #scale .range b { color: var(--text); font-weight: 500; }
-    #scale .bar-wrap { position: relative; width: 74px; height: 240px; }
-    #scale-bar { position: absolute; right: 0; top: 0; bottom: 0; width: 14px; border-radius: 4px; }
-    #scale-ticks span {
-      position: absolute; right: 20px; transform: translateY(-50%);
-      font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap;
-    }
-    #range-band {
-      position: absolute; right: -3px; width: 20px; border: 1px solid rgba(255, 255, 255, 0.75);
-      border-radius: 3px; pointer-events: none;
-    }
-    #cursor-mark { position: absolute; right: -6px; width: 26px; height: 0; border-top: 2px solid var(--cursor); }
-    #cursor-mark::before {
-      content: ''; position: absolute; left: -7px; top: -6px;
-      border: 5px solid transparent; border-left: 7px solid var(--cursor);
-    }
-    #cursor-mark[hidden] { display: none; }
+    .poi-card h2 { margin: 0; font-size: 19px; line-height: 1.3; }
+    .poi-rank { font-size: 12px; font-weight: 500; color: var(--hi-soft); }
+    .poi-card.deep .poi-rank { color: #cdbdff; }
+    .poi-en { color: var(--muted); font-size: 12.5px; }
+    .poi-h { font-family: var(--mono); font-size: 26px; font-weight: 500; color: var(--hi); }
+    .poi-card.deep .poi-h { color: #b79cff; }
+    .poi-card dl { margin: 4px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 12.5px; }
+    .poi-card dt { color: var(--muted); }
+    .poi-card dd { margin: 0; }
+    .poi-actions { display: flex; gap: 6px; margin-top: 6px; }
+    .poi-actions #poi-go { flex: 1; }
+    .poi-actions button { min-width: 40px; }
+    .place-list .rank { font-family: var(--mono); color: var(--muted); margin-right: 8px; }
 
-    #attrib { position: fixed; right: 16px; top: 18px; font-size: 11px; color: var(--muted); text-align: right; }
-    #attrib a { color: var(--muted); }
-
-    #loading {
-      position: fixed; inset: 0; display: grid; place-items: center; background: rgba(4, 7, 15, 0.55);
-    }
-    #loading[hidden] { display: none; }
-    #loading .box { text-align: center; }
-    #loading progress { width: 240px; accent-color: var(--accent); }
-
-    @media (max-width: 640px) {
-      header span, #attrib { display: none; }
-      #panel { left: 16px; right: 16px; width: auto; }
-      #panel { bottom: auto; top: 52px; max-height: 60%; }
-      #scale .text { width: 120px; }
-      #scale .bar-wrap { height: 170px; }
+    /* ---------- mobile ---------- */
+    .sheet { display: none; }
+    @media (max-width: 720px) {
+      .topbar { gap: 8px; }
+      .brand b, .status, .crumbs, .search kbd { display: none !important; }
+      .segmented a { padding: 0 10px; font-size: 13px; }
+      .search { flex: 1 1 0; max-width: none; }
+      .rail, .hud, .legend, .corner-left, #info-btn { display: none !important; }
+      .drawer {
+        top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 62%;
+        border-radius: 22px 22px 0 0; z-index: 7; padding-bottom: 28px;
+      }
+      .inspector {
+        top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 56%;
+        border-radius: 22px 22px 0 0; padding: 16px; gap: 14px;
+      }
+      .inspector h1 { font-size: 21px; }
+      .poi-card { left: 0; right: 0; bottom: 0; width: auto; border-radius: 22px 22px 0 0; z-index: 7; padding-bottom: 24px; }
+      .camstack { top: 76px; bottom: auto; }
+      .camstack .zoom { display: none; }
+      .cambar { right: 72px; left: 16px; top: 76px; bottom: auto; padding: 6px 8px; gap: 8px; }
+      .cambar label { width: auto; flex: 1; }
+      .cambar label > span { display: none; }
+      .sheet {
+        display: flex; flex-direction: column; gap: 12px;
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 3;
+        padding: 10px 16px 22px; border-radius: 22px 22px 0 0;
+        background: rgba(12, 17, 29, 0.95); border-top: 1px solid var(--line);
+      }
+      body.province .sheet { display: none; }
+      .sheet .grab { align-self: center; width: 40px; height: 5px; border-radius: 3px; background: var(--line-strong); }
+      .sheet .top { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+      #sheet-place { font-weight: 600; font-size: 15px; }
+      #sheet-coord { color: var(--muted); font-size: 12.5px; font-family: var(--mono); }
+      #sheet-h { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--cursor); white-space: nowrap; }
+      #mini-bar { position: relative; height: 10px; border-radius: 4px; }
+      #mini-mark { position: absolute; top: -4px; width: 3px; height: 18px; margin-left: -1.5px; border-radius: 2px; background: var(--cursor); }
+      #mini-ticks { position: relative; height: 16px; margin-top: 4px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+      #mini-ticks span { position: absolute; transform: translateX(-50%); }
+      #mini-ticks .end-min { transform: none; }
+      #mini-ticks .end-max { transform: translateX(-100%); }
+      .sheet .primary { height: 46px; border-radius: 12px; border: 0; background: var(--accent); color: #06223a; font-weight: 600; }
+      .sheet .tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: rgba(160, 180, 220, 0.08); }
+      .sheet .tabs button { height: 38px; border: 0; border-radius: 9px; background: transparent; font-size: 13px; color: var(--soft); }
+      .sheet .tabs button[aria-pressed="true"] { background: var(--accent-bg); color: var(--text); }
     }
   </style>
 </head>
 <body>
   <div id="app"></div>
+  <div id="labels" hidden></div>
+  <div id="pins"></div>
+  <div id="pois" data-world-only></div>
 
-  <header>
-    <h1>DeepWorld</h1>
-    <span data-world-only>ความสูงของเปลือกโลก ทั้งบนบกและใต้มหาสมุทร</span>
-    <span data-thai-only>ประเทศไทย 3 มิติ แบบละเอียด</span>
-    <nav>
-      <a href="./" data-thai-only>ดูทั้งโลก</a>
-      <a href="./thai/" data-world-only>เฉพาะประเทศไทย</a>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand glass">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#7dd3fc" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="11" /><path d="M4 15c3-3 5-1 8-4s5-3 10 0" /><path d="M5 19c3-2 6-1 9-3s5-1 7 0" /></svg>
+      <b>DeepWorld</b>
+    </div>
+    <nav class="segmented glass" aria-label="โหมดแผนที่" data-globe-only>
+      <a href="./" id="mode-world">ทั้งโลก</a>
+      <a href="./thai/" id="mode-thai">ประเทศไทย</a>
     </nav>
+    <nav class="crumbs glass" aria-label="ตำแหน่ง" data-province-only>
+      <button type="button" id="crumb-home">ประเทศไทย</button>
+      <span class="sep" aria-hidden="true">›</span>
+      <span id="crumb-region"></span>
+      <span class="sep" aria-hidden="true">›</span>
+      <span class="here" id="crumb-province"></span>
+    </nav>
+    <div class="search">
+      <label class="glass">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+        <span class="sr-only">ค้นหาสถานที่</span>
+        <input id="search" type="search" autocomplete="off" placeholder="ค้นหาจังหวัด อำเภอ ตำบล หรือพิกัด"
+          role="combobox" aria-controls="search-list" aria-expanded="false" aria-autocomplete="list" />
+        <kbd>/</kbd>
+      </label>
+      <ul id="search-list" role="listbox" aria-label="ผลการค้นหา" hidden></ul>
+    </div>
+    <div class="spacer"></div>
+    <div id="status" class="status glass" role="status" hidden>
+      <span class="dot" aria-hidden="true"></span>
+      <span id="status-text"></span>
+      <span id="status-bar"><span></span></span>
+    </div>
+    <button type="button" class="icon-btn" id="back" data-province-only aria-label="กลับสู่ภาพรวม (Esc)" title="กลับ (Esc)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9d3e6" stroke-width="2" aria-hidden="true"><path d="M15 18 9 12l6-6" /></svg>
+    </button>
+    <button type="button" class="icon-btn" id="info-btn" aria-label="เกี่ยวกับข้อมูลและแหล่งที่มา" aria-expanded="false" aria-controls="info">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9d3e6" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7.5v.5" /></svg>
+    </button>
   </header>
 
-  <div id="attrib">
-    ข้อมูลความสูง: <a href="https://registry.opendata.aws/terrain-tiles" target="_blank" rel="noopener">AWS Terrain Tiles</a>
-    (SRTM, GMTED, ETOPO1)<br />
-    รอยต่อแผ่นเปลือกโลก: <a href="https://github.com/fraxen/tectonicplates" target="_blank" rel="noopener">PB2002, Bird 2003</a><br />
-    เขตการปกครอง: <a href="https://github.com/chingchai/OpenGISData-Thailand" target="_blank" rel="noopener">OpenGISData-Thailand</a> (CC BY 4.0, กรมการปกครอง)
-  </div>
-
-  <aside id="panel" class="collapsed">
-    <div class="head">
-      <h2>การแสดงผล</h2>
-      <button id="toggle-panel" aria-label="ย่อ/ขยายแผง">☰</button>
+  <section id="info" aria-label="เกี่ยวกับข้อมูล" hidden>
+    <div class="drawer-head">
+      <h2>เกี่ยวกับข้อมูล</h2>
+      <button type="button" class="drawer-close" aria-label="ปิด"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
     </div>
-    <div class="body">
-      <div class="row">
-        <label for="exag">ขยายความสูง <output id="exag-val"></output></label>
-        <input id="exag" type="range" min="1" max="100" step="1" />
+    <ul>
+      <li>ความสูง: <a href="https://registry.opendata.aws/terrain-tiles" target="_blank" rel="noopener">AWS Terrain Tiles</a> (SRTM, GMTED, ETOPO1)</li>
+      <li>เขตการปกครอง: <a href="https://github.com/chingchai/OpenGISData-Thailand" target="_blank" rel="noopener">OpenGISData-Thailand</a> (CC BY 4.0, กรมการปกครอง)</li>
+      <li data-world-only>รอยต่อแผ่นเปลือกโลก: <a href="https://github.com/fraxen/tectonicplates" target="_blank" rel="noopener">PB2002, Bird 2003</a></li>
+    </ul>
+    <p id="stats"></p>
+    <p>ลากเพื่อหมุน · ล้อเมาส์เพื่อซูม · คลิกจังหวัดเพื่อดูแบบ 3D · <kbd>/</kbd> ค้นหา · <kbd>Esc</kbd> กลับ</p>
+  </section>
+
+  <!-- Left rail -->
+  <nav class="rail glass" aria-label="เครื่องมือ">
+    <button type="button" data-drawer="d-terrain" aria-pressed="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><path d="m3 17 5-7 4 5 3-4 6 6" /><path d="M3 21h18" /></svg>
+      ภูมิประเทศ
+    </button>
+    <button type="button" data-drawer="d-layers" aria-pressed="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 13 9 5 9-5" /></svg>
+      ชั้นข้อมูล
+    </button>
+    <button type="button" data-drawer="d-places" aria-pressed="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" /></svg>
+      สถานที่
+    </button>
+  </nav>
+
+  <section class="drawer glass" id="d-terrain" aria-label="ภูมิประเทศ" hidden>
+    <div class="drawer-head">
+      <h2>ภูมิประเทศ</h2>
+      <button type="button" class="drawer-close" aria-label="ปิดแผง"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+    </div>
+    <label class="field">
+      <span class="field-label">ขยายความสูง <output data-out="exaggeration"></output></span>
+      <input type="range" min="1" max="100" step="1" data-bind="exaggeration" />
+    </label>
+    <label class="field">
+      <span class="field-label">ความเข้มของเงา <output data-out="relief"></output></span>
+      <input type="range" min="0" max="30" step="1" data-bind="relief" />
+    </label>
+    <div class="field">
+      <span class="field-label">ชุดสี</span>
+      <div class="ramps" id="ramps"></div>
+    </div>
+    <div class="group">
+      <label class="check">จำลองระดับน้ำทะเล <input type="checkbox" data-bind="water" /></label>
+      <label class="field">
+        <span class="field-label">ระดับน้ำ <output data-out="sea"></output></span>
+        <input type="range" min="-6000" max="3000" step="10" data-bind="sea" id="sea" />
+      </label>
+    </div>
+    <p class="hint" id="detail"></p>
+  </section>
+
+  <section class="drawer glass" id="d-layers" aria-label="ชั้นข้อมูล" hidden>
+    <div class="drawer-head">
+      <h2>ชั้นข้อมูล</h2>
+      <button type="button" class="drawer-close" aria-label="ปิดแผง"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+    </div>
+    <div class="field">
+      <label class="check"><span><span class="swatch" style="background:#fff"></span>เขตจังหวัด</span><input type="checkbox" data-bind="provinces" /></label>
+      <label class="check"><span><span class="swatch" style="background:rgba(255,255,255,0.45)"></span>เขตตำบล (มุมมองจังหวัด)</span><input type="checkbox" data-bind="tambonLines" /></label>
+      <label class="check">ชื่อจังหวัด <input type="checkbox" data-bind="labels" /></label>
+      <label class="check">หมุดสูงสุด–ต่ำสุด <input type="checkbox" data-bind="pins" /></label>
+      <label class="check" data-world-only><span><span class="swatch" style="background:#ff5a36"></span>รอยต่อแผ่นเปลือกโลก</span><input type="checkbox" data-bind="plates" id="plates" /></label>
+      <label class="check" data-world-only><span><span class="swatch" style="background:linear-gradient(90deg,#ff8a70 50%,#b79cff 50%)"></span>10 อันดับสูงสุด/ลึกสุดของโลก</span><input type="checkbox" data-bind="worldPois" /></label>
+    </div>
+    <label class="field group" data-world-only>
+      <span class="field-label">ความละเอียดภาพรวม</span>
+      <select data-bind="quality">
+        <option value="low">ต่ำ (~40 กม./พิกเซล)</option>
+        <option value="medium">กลาง (~20 กม./พิกเซล)</option>
+        <option value="high">สูง (~10 กม./พิกเซล)</option>
+      </select>
+    </label>
+  </section>
+
+  <section class="drawer glass" id="d-places" aria-label="สถานที่" hidden>
+    <div class="drawer-head">
+      <h2>สถานที่</h2>
+      <button type="button" class="drawer-close" aria-label="ปิดแผง"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+    </div>
+    <div class="presets" data-world-only>
+      <button type="button" data-place="thailand">ประเทศไทย</button>
+      <button type="button" data-place="everest">ยอดเอเวอเรสต์</button>
+      <button type="button" data-place="mariana">ร่องลึกมาเรียนา</button>
+      <button type="button" data-place="atlantic">สันเขากลางแอตแลนติก</button>
+      <button type="button" data-place="andes">เทือกเขาแอนดีส</button>
+      <button type="button" data-place="himalaya">ที่ราบสูงทิเบต</button>
+    </div>
+    <section class="field" data-world-only aria-label="10 อันดับของโลก">
+      <span class="field-label">10 อันดับของโลก</span>
+      <div class="toggle2" role="group" aria-label="ประเภท">
+        <button type="button" data-poi-kind="high" aria-pressed="true">สูงที่สุด</button>
+        <button type="button" data-poi-kind="deep" aria-pressed="false">ลึกที่สุด</button>
       </div>
-      <div class="row">
-        <label for="relief">ความเข้มของเงา <output id="relief-val"></output></label>
-        <input id="relief" type="range" min="0" max="30" step="1" />
-      </div>
-      <label class="check"><input id="water" type="checkbox" /> แสดงน้ำทะเล</label>
-      <div class="row">
-        <label for="sea">ระดับน้ำทะเล <output id="sea-val"></output></label>
-        <input id="sea" type="range" min="-6000" max="3000" step="10" />
-      </div>
-      <label class="check" data-world-only><input id="plates" type="checkbox" /> <span class="swatch"></span> รอยต่อแผ่นเปลือกโลก</label>
-      <label class="check"><input id="provinces" type="checkbox" /> <span class="swatch prov"></span> เขตจังหวัด (ไทย)</label>
-      <div class="row">
-        <label for="province">ไปยังจังหวัด</label>
-        <select id="province" disabled><option value="">— เลือกจังหวัด —</option></select>
-        <div id="province-info"></div>
-      </div>
-      <div class="row" data-world-only>
-        <label for="quality">ความละเอียด</label>
-        <select id="quality">
-          <option value="low">ต่ำ (~40 กม./พิกเซล)</option>
-          <option value="medium">กลาง (~20 กม./พิกเซล)</option>
-          <option value="high">สูง (~10 กม./พิกเซล)</option>
-        </select>
-      </div>
-      <hr data-world-only />
-      <div class="row" data-world-only><label>บินไปยัง</label></div>
-      <div class="places" data-world-only>
-        <button data-place="everest">ยอดเอเวอเรสต์</button>
-        <button data-place="mariana">ร่องลึกมาเรียนา</button>
-        <button data-place="atlantic">สันเขากลางแอตแลนติก</button>
-        <button data-place="andes">เทือกเขาแอนดีส</button>
-        <button data-place="himalaya">ที่ราบสูงทิเบต</button>
-        <button data-place="thailand">ประเทศไทย</button>
-      </div>
-      <div id="detail"></div>
-      <div id="stats"></div>
+      <div class="place-list" id="poi-list"></div>
+    </section>
+    <label class="field">
+      <span class="field-label">จังหวัด (77)</span>
+      <input class="filter" id="place-filter" type="search" placeholder="กรองชื่อจังหวัด" autocomplete="off" />
+    </label>
+    <div class="place-list" id="place-list"></div>
+  </section>
+
+  <!-- Elevation legend -->
+  <aside class="legend glass" aria-label="สเกลความสูง">
+    <div class="cap">ความสูง (ม.)</div>
+    <div class="legend-body">
+      <div id="legend-bar"></div>
+      <div id="legend-ticks"></div>
+      <div id="legend-mark" hidden></div>
+    </div>
+    <div class="toggle2" role="group" aria-label="ช่วงของสเกล">
+      <button type="button" data-range="local" aria-pressed="true">พื้นที่นี้</button>
+      <button type="button" data-range="world" aria-pressed="false">ทั้งโลก</button>
     </div>
   </aside>
 
-  <div id="labels" hidden></div>
-  <div id="pins"></div>
+  <!-- Cursor HUD -->
+  <div class="hud glass idle" id="hud">
+    <span id="hud-place">ชี้ที่แผนที่เพื่อดูความสูง</span>
+    <span class="sep" aria-hidden="true"></span>
+    <span id="hud-coord">—</span>
+    <span class="sep" aria-hidden="true"></span>
+    <span id="hud-h">—</span>
+  </div>
 
-  <div id="pcard" hidden>
-    <div class="head">
-      <div>
-        <div id="pc-name"></div>
-        <div id="pc-sub"></div>
+  <div class="corner-left">
+    <div id="scalebar" hidden><span id="scalebar-line"></span><span id="scalebar-text"></span></div>
+    <button type="button" class="credit" id="credit">ข้อมูล: AWS Terrain Tiles · กรมการปกครอง (CC BY 4.0)</button>
+  </div>
+
+  <!-- Camera -->
+  <div class="cambar glass" role="group" aria-label="ควบคุมกล้อง" data-province-only>
+    <label><span>มุมกล้อง</span><input type="range" id="tilt" min="10" max="89" step="1" /><output id="tilt-val"></output></label>
+    <button type="button" class="icon-btn" id="orbit" aria-pressed="false" aria-label="หมุนรอบจังหวัดอัตโนมัติ">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9d3e6" stroke-width="1.8" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7" /><path d="M20 4v5h-5" /></svg>
+    </button>
+    <button type="button" class="ghost-btn" id="topview">มุมบน</button>
+  </div>
+  <div class="camstack">
+    <button type="button" class="icon-btn" id="north" aria-label="หันทิศเหนือขึ้น">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 15 12H9Z" fill="#ff8a70" /><path d="M12 21 9 12h6Z" fill="#9aa6bd" /></svg>
+    </button>
+    <div class="zoom glass">
+      <button type="button" id="zoom-in" aria-label="ซูมเข้า">+</button>
+      <hr />
+      <button type="button" id="zoom-out" aria-label="ซูมออก">−</button>
+    </div>
+  </div>
+
+  <!-- World top-10 detail card -->
+  <section class="poi-card glass" id="poi-card" aria-label="รายละเอียดจุด" hidden>
+    <div class="drawer-head">
+      <span class="poi-rank" id="poi-rank"></span>
+      <button type="button" class="drawer-close" id="poi-close" aria-label="ปิด"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+    </div>
+    <h2 id="poi-name"></h2>
+    <div class="poi-en" id="poi-en"></div>
+    <div class="poi-h" id="poi-h"></div>
+    <dl>
+      <dt>ที่ตั้ง</dt><dd id="poi-where"></dd>
+      <dt>พิกัด</dt><dd id="poi-at" class="mono"></dd>
+      <dt>ในแบบจำลองตอนนี้</dt><dd id="poi-model" class="mono"></dd>
+    </dl>
+    <p class="hint" id="poi-note"></p>
+    <div class="poi-actions">
+      <button type="button" class="ghost-btn" id="poi-go">บินไปที่จุดนี้</button>
+      <button type="button" class="ghost-btn" id="poi-prev" aria-label="อันดับก่อนหน้า">‹</button>
+      <button type="button" class="ghost-btn" id="poi-next" aria-label="อันดับถัดไป">›</button>
+    </div>
+  </section>
+
+  <!-- Province inspector -->
+  <aside class="inspector glass" id="inspector" aria-label="ข้อมูลจังหวัด" data-province-only>
+    <div>
+      <h1 id="pi-name"></h1>
+      <div id="pi-sub"></div>
+    </div>
+    <div class="extremes">
+      <div class="xcard hi">
+        <span class="k">▲ จุดสูงสุด</span>
+        <span class="v" id="pi-max">—</span>
+        <span class="n" id="pi-max-name"></span>
+        <span class="c" id="pi-max-at"></span>
+        <button type="button" id="pi-max-go">บินไปที่จุดนี้</button>
       </div>
-      <button id="pc-close">กลับสู่ลูกโลก ✕</button>
-    </div>
-    <div class="stats">
-      <div class="stat hi">▲ จุดสูงสุด<b id="pc-max"></b><span id="pc-max-at"></span></div>
-      <div class="stat lo">▼ จุดต่ำสุด (บนบก)<b id="pc-min"></b><span id="pc-min-at"></span></div>
-    </div>
-    <div id="pc-res"></div>
-    <div class="hint">ลากเพื่อหมุน · คลิกขวาลากเพื่อเลื่อน · คลิกจังหวัดอื่นเพื่อเปลี่ยน · Esc เพื่อออก</div>
-  </div>
-
-  <div id="scale">
-    <div class="text">
-      <div class="title">ความสูง ณ ตำแหน่งเคอร์เซอร์</div>
-      <div id="readout-place"></div>
-      <div id="readout-coord">วางเคอร์เซอร์บนแผนที่</div>
-      <div id="readout-h">—</div>
-      <div id="readout-note"></div>
-      <div class="range">
-        พื้นที่ที่แสดง (กรอบขาว)<br />
-        สูงสุด <b id="range-max">—</b><br />
-        ต่ำสุด <b id="range-min">—</b>
+      <div class="xcard lo">
+        <span class="k">▼ จุดต่ำสุด (บนบก)</span>
+        <span class="v" id="pi-min">—</span>
+        <span class="n" id="pi-min-name"></span>
+        <span class="c" id="pi-min-at"></span>
+        <button type="button" id="pi-min-go">บินไปที่จุดนี้</button>
       </div>
     </div>
-    <div class="bar-wrap">
-      <div id="scale-ticks"></div>
-      <div id="scale-bar"><div id="range-band"></div></div>
-      <div id="cursor-mark" hidden></div>
+    <p class="hint" id="pi-x-note" hidden>พื้นที่ราบ: ค่าสูงสุดอาจมาจากอาคารหรือแนวต้นไม้ เพราะข้อมูล SRTM วัดความสูงของพื้นผิว ไม่ใช่ระดับดิน</p>
+    <section aria-label="การกระจายความสูง" class="field">
+      <span class="field-label">การกระจายความสูง <span class="hint" id="pi-hist-note"></span></span>
+      <div class="hist" id="pi-hist" aria-hidden="true"></div>
+      <div class="hist-axis"><span id="pi-hist-min"></span><span id="pi-hist-mid"></span><span id="pi-hist-max"></span></div>
+    </section>
+    <div class="group">
+      <label class="field">
+        <span class="field-label">ขยายความสูง <output data-out="exaggeration"></output></span>
+        <input type="range" min="1" max="100" step="1" data-bind="exaggeration" />
+      </label>
+      <div class="note" id="pi-exag-note" hidden></div>
+      <label class="check">เส้นเขตตำบล <input type="checkbox" data-bind="tambonLines" /></label>
+      <label class="check">หมุดสูงสุด–ต่ำสุด <input type="checkbox" data-bind="pins" /></label>
     </div>
-  </div>
+    <section class="group" aria-label="อำเภอ">
+      <span class="field-label" id="pi-amphoe-title">อำเภอ</span>
+      <div class="place-list" id="pi-amphoe"></div>
+    </section>
+    <p class="hint" id="pi-res"></p>
+  </aside>
 
-  <div id="loading">
-    <div class="box">
-      <div id="loading-text">กำลังเริ่มต้น…</div>
-      <progress id="progress" max="1" value="0"></progress>
+  <!-- Mobile sheet -->
+  <section class="sheet" aria-label="ข้อมูลจุดที่แตะ">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="top">
+      <div style="min-width:0">
+        <div id="sheet-place">แตะที่แผนที่เพื่อดูความสูง</div>
+        <div id="sheet-coord"></div>
+      </div>
+      <div id="sheet-h"></div>
     </div>
-  </div>
+    <div>
+      <div id="mini-bar"><span id="mini-mark" hidden></span></div>
+      <div id="mini-ticks"></div>
+    </div>
+    <button type="button" class="primary" id="sheet-3d" hidden>ดู 3D จังหวัดนี้</button>
+    <div class="tabs" role="group" aria-label="แผง">
+      <button type="button" data-drawer="d-terrain" aria-pressed="false">ภูมิประเทศ</button>
+      <button type="button" data-drawer="d-layers" aria-pressed="false">ชั้นข้อมูล</button>
+      <button type="button" data-drawer="d-places" aria-pressed="false">สถานที่</button>
+    </div>
+  </section>
 
   <script type="module" src="src/main.js"></script>
 </body>

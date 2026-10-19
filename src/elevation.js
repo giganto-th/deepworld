@@ -9,6 +9,44 @@ export const MAX_ZOOM = 12;
 const cache = new Map();
 const CACHE_SIZE = 600;
 
+// Tiles also go into Cache Storage: S3 sends no Cache-Control, so the HTTP cache alone
+// may drop them, and background prefetching (prefetchTiles) needs somewhere durable to put them.
+const CACHE_NAME = 'deepworld-tiles-v1';
+let storage = typeof caches !== 'undefined' ? caches.open(CACHE_NAME).catch(() => null) : Promise.resolve(null);
+
+// Batch tools that sweep many regions once (tools/precompute.html) skip Cache Storage.
+export function disableTileStorage() { storage = Promise.resolve(null); }
+
+async function fetchTileBlob(url, priority = 'auto') {
+  const store = await storage;
+  const hit = await store?.match(url);
+  if (hit) return hit.blob();
+  const res = await fetch(url, { mode: 'cors', priority });
+  if (!res.ok) throw new Error(`${url}: ${res.status}`);
+  store?.put(url, res.clone()).catch(() => {}); // quota errors just skip caching
+  return res.blob();
+}
+
+// Warm the tile cache for a region without decoding anything. Low priority, few at a time,
+// so it never competes with what the viewer is looking at.
+export async function prefetchTiles(z, x0, y0, nx, ny, { concurrency = 3, isStale = () => false } = {}) {
+  const store = await storage;
+  if (!store) return 0;
+  const n = 2 ** z;
+  const urls = [];
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) urls.push(TILE_URL(z, (((x0 + x) % n) + n) % n, y0 + y));
+  let fetched = 0;
+  const worker = async () => {
+    while (urls.length && !isStale()) {
+      const url = urls.shift();
+      if (await store.match(url)) continue;
+      try { await fetchTileBlob(url, 'low'); fetched++; } catch { /* skip */ }
+    }
+  };
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  return fetched;
+}
+
 async function loadTile(z, x, y) {
   const key = `${z}/${x}/${y}`;
   if (cache.has(key)) {
@@ -18,10 +56,9 @@ async function loadTile(z, x, y) {
     return hit;
   }
   const promise = (async () => {
-    const res = await fetch(TILE_URL(z, x, y), { mode: 'cors' });
-    if (!res.ok) throw new Error(`tile ${key}: ${res.status}`);
+    const blob = await fetchTileBlob(TILE_URL(z, x, y));
     // Avoid color management / premultiplication touching the encoded RGB values.
-    return createImageBitmap(await res.blob(), {
+    return createImageBitmap(blob, {
       colorSpaceConversion: 'none',
       premultiplyAlpha: 'none',
     });

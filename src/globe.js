@@ -28,29 +28,63 @@ export const RAMP_STOPS = [
   [9000, '#2a1407'],
 ];
 
-function buildRampTexture() {
-  const N = 8192; // ~2.4 m per texel, so the sea-level color break stays sharp
-  const px = new Uint8Array(N * 4);
-  const stops = RAMP_STOPS.map(([h, c]) => [h, new THREE.Color(c)]);
-  const tmp = new THREE.Color();
-  const srgb = { r: 0, g: 0, b: 0 };
-  for (let i = 0; i < N; i++) {
-    const h = RAMP_MIN + (i / (N - 1)) * (RAMP_MAX - RAMP_MIN);
-    let k = 0;
-    while (k < stops.length - 2 && h > stops[k + 1][0]) k++;
-    const [h0, c0] = stops[k];
-    const [h1, c1] = stops[k + 1];
-    tmp.copy(c0).lerp(c1, Math.min(1, Math.max(0, (h - h0) / (h1 - h0))));
-    tmp.getRGB(srgb, THREE.SRGBColorSpace); // shader works in display (sRGB) space
-    px.set([srgb.r * 255, srgb.g * 255, srgb.b * 255, 255], i * 4);
-  }
-  const tex = new THREE.DataTexture(px, N, 1, THREE.RGBAFormat);
-  tex.magFilter = tex.minFilter = THREE.LinearFilter;
-  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
-  tex.needsUpdate = true;
-  return tex;
+// Alternative schemes keep the same ocean so coastlines read the same in every scheme.
+const OCEAN = RAMP_STOPS.filter(([h]) => h < 0);
+export const RAMPS = {
+  natural: { label: 'ธรรมชาติ', stops: RAMP_STOPS },
+  heat: {
+    label: 'ความร้อน',
+    stops: [...OCEAN, [0, '#0d0887'], [300, '#5302a3'], [800, '#8b0aa5'], [1500, '#b83289'],
+      [2500, '#db5c68'], [4000, '#f48849'], [6000, '#febd2a'], [9000, '#f0f921']],
+  },
+  gray: {
+    label: 'ขาวดำ',
+    stops: [[-11000, '#000000'], [-4000, '#1c1f24'], [-1, '#3a3f48'], [0, '#5a5a5a'],
+      [1000, '#8a8a8a'], [2500, '#b5b5b5'], [5000, '#dcdcdc'], [9000, '#ffffff']],
+  },
+};
+
+// Color (sRGB 0–1) of `h` meters on a stop list.
+const rampA = new THREE.Color();
+const rampB = new THREE.Color();
+export function rampColor(stops, h, out = { r: 0, g: 0, b: 0 }) {
+  let k = 0;
+  while (k < stops.length - 2 && h > stops[k + 1][0]) k++;
+  const [h0, c0] = stops[k];
+  const [h1, c1] = stops[k + 1];
+  rampA.set(c0).lerp(rampB.set(c1), Math.min(1, Math.max(0, (h - h0) / (h1 - h0))));
+  return rampA.getRGB(out, THREE.SRGBColorSpace);
 }
-const rampTexture = buildRampTexture();
+
+// CSS gradient of the ramp between two heights, `max` first (a legend drawn top-down).
+export function rampCss(stops, min, max, direction = 'to bottom', steps = 24) {
+  const parts = [];
+  const c = { r: 0, g: 0, b: 0 };
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    rampColor(stops, max - t * (max - min), c);
+    parts.push(`rgb(${Math.round(c.r * 255)} ${Math.round(c.g * 255)} ${Math.round(c.b * 255)}) ${(t * 100).toFixed(1)}%`);
+  }
+  return `linear-gradient(${direction}, ${parts.join(', ')})`;
+}
+
+// One ramp texture shared by every surface; ~2.4 m per texel keeps the sea-level break sharp.
+const RAMP_N = 8192;
+const rampData = new Uint8Array(RAMP_N * 4);
+const rampTexture = new THREE.DataTexture(rampData, RAMP_N, 1, THREE.RGBAFormat);
+rampTexture.magFilter = rampTexture.minFilter = THREE.LinearFilter;
+rampTexture.wrapS = rampTexture.wrapT = THREE.ClampToEdgeWrapping;
+
+export function setRamp(stops) {
+  const c = { r: 0, g: 0, b: 0 };
+  for (let i = 0; i < RAMP_N; i++) {
+    rampColor(stops, RAMP_MIN + (i / (RAMP_N - 1)) * (RAMP_MAX - RAMP_MIN), c);
+    rampData.set([c.r * 255, c.g * 255, c.b * 255, 255], i * 4); // shader works in display (sRGB) space
+  }
+  rampTexture.needsUpdate = true;
+}
+setRamp(RAMP_STOPS);
+
 const noMask = new THREE.DataTexture(new Uint8Array([255]), 1, 1, THREE.RedFormat);
 noMask.needsUpdate = true;
 
