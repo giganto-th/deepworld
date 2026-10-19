@@ -1,100 +1,158 @@
-// Global elevation from AWS Terrain Tiles (Terrarium encoding), reprojected to equirectangular.
+// Elevation from AWS Terrain Tiles (Terrarium encoding), reprojected to equirectangular grids.
 
 const TILE_URL = (z, x, y) =>
   `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`;
-const MAX_LAT = 85.0511287798;
+export const MAX_LAT = 85.0511287798;
+export const MAX_ZOOM = 12;
+
+// Small LRU of decoded tiles so panning around a region reuses what is already loaded.
+const cache = new Map();
+const CACHE_SIZE = 600;
 
 async function loadTile(z, x, y) {
-  const res = await fetch(TILE_URL(z, x, y), { mode: 'cors' });
-  if (!res.ok) throw new Error(`tile ${z}/${x}/${y}: ${res.status}`);
-  // Avoid color management / premultiplication touching the encoded RGB values.
-  return createImageBitmap(await res.blob(), {
-    colorSpaceConversion: 'none',
-    premultiplyAlpha: 'none',
-  });
+  const key = `${z}/${x}/${y}`;
+  if (cache.has(key)) {
+    const hit = cache.get(key);
+    cache.delete(key);
+    cache.set(key, hit);
+    return hit;
+  }
+  const promise = (async () => {
+    const res = await fetch(TILE_URL(z, x, y), { mode: 'cors' });
+    if (!res.ok) throw new Error(`tile ${key}: ${res.status}`);
+    // Avoid color management / premultiplication touching the encoded RGB values.
+    return createImageBitmap(await res.blob(), {
+      colorSpaceConversion: 'none',
+      premultiplyAlpha: 'none',
+    });
+  })();
+  cache.set(key, promise);
+  promise.catch(() => cache.delete(key));
+  while (cache.size > CACHE_SIZE) {
+    const [oldKey, old] = cache.entries().next().value;
+    cache.delete(oldKey);
+    old.then((b) => b.close(), () => {});
+  }
+  return promise;
 }
 
-// Returns { size, data: Float32Array(size*size) } in Web Mercator, row 0 = north.
-export async function loadMercator(z, onProgress = () => {}) {
+// Tile edges in degrees.
+export const tileLon = (x, z) => (x / 2 ** z) * 360 - 180;
+export const tileLat = (y, z) => (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / 2 ** z))) * 180) / Math.PI;
+export const lonToTileX = (lon, z) => ((lon + 180) / 360) * 2 ** z;
+export const latToTileY = (lat, z) => {
+  const phi = (Math.max(-MAX_LAT, Math.min(MAX_LAT, lat)) * Math.PI) / 180;
+  return ((1 - Math.log(Math.tan(Math.PI / 4 + phi / 2)) / Math.PI) / 2) * 2 ** z;
+};
+
+// Loads tiles [x0, x0+nx) × [y0, y0+ny) at zoom z into one Web Mercator raster (row 0 = north).
+// x wraps around the antimeridian; y must be inside [0, 2^z).
+export async function loadMercatorRegion(z, x0, y0, nx, ny, { onProgress = () => {}, isStale = () => false } = {}) {
   const n = 2 ** z;
-  const size = 256 * n;
+  const width = 256 * nx;
+  const height = 256 * ny;
   const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = size;
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
   const jobs = [];
-  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) jobs.push([x, y]);
+  for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) jobs.push([x, y]);
+  const total = jobs.length;
   let done = 0;
   let failed = 0;
   const worker = async () => {
-    while (jobs.length) {
+    while (jobs.length && !isStale()) {
       const [x, y] = jobs.shift();
       try {
-        const img = await loadTile(z, x, y);
+        const img = await loadTile(z, (((x0 + x) % n) + n) % n, y0 + y);
         ctx.drawImage(img, x * 256, y * 256);
-        img.close();
       } catch {
         failed++;
         ctx.fillStyle = 'rgb(128,0,0)'; // decodes to 0 m
         ctx.fillRect(x * 256, y * 256, 256, 256);
       }
-      onProgress(++done / (n * n));
+      onProgress(++done / total);
     }
   };
   await Promise.all(Array.from({ length: 16 }, worker));
+  if (isStale()) return null;
 
-  const px = ctx.getImageData(0, 0, size, size).data;
-  const data = new Float32Array(size * size);
+  const px = ctx.getImageData(0, 0, width, height).data;
+  const data = new Float32Array(width * height);
   for (let i = 0, j = 0; i < data.length; i++, j += 4) {
     const h = px[j] * 256 + px[j + 1] + px[j + 2] / 256 - 32768;
     // Clamp known spike artifacts to Earth's physical range (Challenger Deep … Everest).
     data[i] = Math.max(-11000, Math.min(8850, h));
   }
-  return { size, data, failed };
+  return { z, x0, y0, nx, ny, width, height, data, failed };
 }
 
-// Mercator → equirectangular grid W×H, row 0 = south (matches texture v = 0).
-export function toEquirect(merc, W, H) {
-  const { size: S, data: src } = merc;
+// Mercator raster → equirectangular grid W×H over `bounds`, row 0 = south (texture v = 0).
+// Latitudes outside the raster are clamped to its edge (the poles, for the global grid).
+export function reproject(merc, W, H, bounds) {
+  const { z, x0, y0, width: S, height: SH, data: src } = merc;
+  const wrap = merc.nx === 2 ** z;
   const out = new Float32Array(W * H);
   let min = Infinity;
   let max = -Infinity;
   for (let j = 0; j < H; j++) {
-    let lat = -90 + ((j + 0.5) / H) * 180;
-    lat = Math.max(-MAX_LAT, Math.min(MAX_LAT, lat));
-    const phi = (lat * Math.PI) / 180;
-    const my = ((1 - Math.log(Math.tan(Math.PI / 4 + phi / 2)) / Math.PI) / 2) * S - 0.5;
-    const y0 = Math.max(0, Math.min(S - 1, Math.floor(my)));
-    const y1 = Math.min(S - 1, y0 + 1);
-    const fy = Math.max(0, Math.min(1, my - y0));
+    const lat = bounds.latMin + ((j + 0.5) / H) * (bounds.latMax - bounds.latMin);
+    const my = (latToTileY(lat, z) - y0) * 256 - 0.5;
+    const y0i = Math.max(0, Math.min(SH - 1, Math.floor(my)));
+    const y1i = Math.min(SH - 1, y0i + 1);
+    const fy = Math.max(0, Math.min(1, my - y0i));
     for (let i = 0; i < W; i++) {
-      const mx = ((i + 0.5) / W) * S - 0.5;
-      const xf = Math.floor(mx);
-      const fx = mx - xf;
-      const x0 = (xf + S) % S;
-      const x1 = (x0 + 1) % S;
-      const a = src[y0 * S + x0] * (1 - fx) + src[y0 * S + x1] * fx;
-      const b = src[y1 * S + x0] * (1 - fx) + src[y1 * S + x1] * fx;
+      const lon = bounds.lonMin + ((i + 0.5) / W) * (bounds.lonMax - bounds.lonMin);
+      const mx = (lonToTileX(lon, z) - x0) * 256 - 0.5;
+      let xa = Math.floor(mx);
+      const fx = mx - xa;
+      let xb = xa + 1;
+      if (wrap) {
+        xa = ((xa % S) + S) % S;
+        xb = xb % S;
+      } else {
+        xa = Math.max(0, Math.min(S - 1, xa));
+        xb = Math.max(0, Math.min(S - 1, xb));
+      }
+      const a = src[y0i * S + xa] * (1 - fx) + src[y0i * S + xb] * fx;
+      const b = src[y1i * S + xa] * (1 - fx) + src[y1i * S + xb] * fx;
       const h = a * (1 - fy) + b * fy;
       out[j * W + i] = h;
       if (h < min) min = h;
       if (h > max) max = h;
     }
   }
-  return { width: W, height: H, data: out, min, max };
+  return { width: W, height: H, data: out, min, max, wrap, ...bounds };
+}
+
+export const GLOBAL_BOUNDS = { latMin: -90, latMax: 90, lonMin: -180, lonMax: 180 };
+
+export async function loadGlobal(z, onProgress) {
+  const n = 2 ** z;
+  const merc = await loadMercatorRegion(z, 0, 0, n, n, { onProgress });
+  const grid = reproject(merc, merc.width, merc.width / 2, GLOBAL_BOUNDS);
+  grid.failed = merc.failed;
+  return grid;
+}
+
+export function contains(grid, lat, lon) {
+  return lat >= grid.latMin && lat <= grid.latMax && lon >= grid.lonMin && lon <= grid.lonMax;
 }
 
 // Bilinear height lookup in degrees.
 export function heightAt(grid, lat, lon) {
   const { width: W, height: H, data } = grid;
-  const u = (((lon + 180) / 360) % 1 + 1) % 1 * W - 0.5;
-  const v = Math.max(0, Math.min(H - 1.001, ((lat + 90) / 180) * H - 0.5));
+  let u = ((lon - grid.lonMin) / (grid.lonMax - grid.lonMin)) * W - 0.5;
+  if (grid.wrap) u = ((u % W) + W) % W;
+  else u = Math.max(0, Math.min(W - 1.001, u));
+  const v = Math.max(0, Math.min(H - 1.001, ((lat - grid.latMin) / (grid.latMax - grid.latMin)) * H - 0.5));
   const x0 = Math.floor(u);
   const fx = u - x0;
   const y0 = Math.floor(v);
   const fy = v - y0;
-  const xa = (x0 + W) % W;
-  const xb = (x0 + 1) % W;
+  const xa = grid.wrap ? (x0 + W) % W : x0;
+  const xb = grid.wrap ? (x0 + 1) % W : Math.min(W - 1, x0 + 1);
   const r0 = data[y0 * W + xa] * (1 - fx) + data[y0 * W + xb] * fx;
   const r1 = data[(y0 + 1) * W + xa] * (1 - fx) + data[(y0 + 1) * W + xb] * fx;
   return r0 * (1 - fy) + r1 * fy;
