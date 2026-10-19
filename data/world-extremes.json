@@ -1,32 +1,429 @@
 {
-  "note": "ความสูงของยอดเขาเป็นค่าที่ยอมรับทั่วไป (เอเวอเรสต์ 8,848.86 ม. จากการสำรวจร่วมจีน–เนปาล ปี 2020) ส่วนความลึกของร่องลึกก้นสมุทรแต่ละแหล่งวัดได้ต่างกันหลายสิบถึงหลายร้อยเมตร ค่าในตารางนี้เป็นค่าโดยประมาณ และพิกัดเป็นตำแหน่งโดยประมาณของจุดลึกที่สุด",
-  "sources": [
-    "Wikipedia: List of highest mountains on Earth",
-    "Wikipedia: Oceanic trench; Five Deeps Expedition (Stewart & Jamieson, 2019)",
-    "GEBCO_2025 Grid"
-  ],
-  "high": [
-    { "rank": 1, "name": "ยอดเขาเอเวอเรสต์", "nameEn": "Mount Everest", "h": 8849, "lat": 27.9881, "lon": 86.925, "where": "เนปาล / จีน (ทิเบต)", "range": "เทือกเขาหิมาลัย" },
-    { "rank": 2, "name": "เคทู", "nameEn": "K2", "h": 8611, "lat": 35.8825, "lon": 76.5133, "where": "ปากีสถาน / จีน", "range": "เทือกเขาคาราโครัม" },
-    { "rank": 3, "name": "คังเชนจุงกา", "nameEn": "Kangchenjunga", "h": 8586, "lat": 27.7025, "lon": 88.1475, "where": "เนปาล / อินเดีย", "range": "เทือกเขาหิมาลัย" },
-    { "rank": 4, "name": "โลตเซ", "nameEn": "Lhotse", "h": 8516, "lat": 27.9617, "lon": 86.9333, "where": "เนปาล / จีน (ทิเบต)", "range": "เทือกเขาหิมาลัย" },
-    { "rank": 5, "name": "มากาลู", "nameEn": "Makalu", "h": 8485, "lat": 27.8897, "lon": 87.0889, "where": "เนปาล / จีน (ทิเบต)", "range": "เทือกเขาหิมาลัย" },
-    { "rank": 6, "name": "โชโอยู", "nameEn": "Cho Oyu", "h": 8188, "lat": 28.0942, "lon": 86.6608, "where": "เนปาล / จีน (ทิเบต)", "range": "เทือกเขาหิมาลัย" },
-    { "rank": 7, "name": "ธวลาคิรี 1", "nameEn": "Dhaulagiri I", "h": 8167, "lat": 28.6983, "lon": 83.4875, "where": "เนปาล", "range": "เทือกเขาหิมาลัย" },
-    { "rank": 8, "name": "มานาสลู", "nameEn": "Manaslu", "h": 8163, "lat": 28.5497, "lon": 84.5597, "where": "เนปาล", "range": "เทือกเขาหิมาลัย" },
-    { "rank": 9, "name": "นังกาปาร์บัต", "nameEn": "Nanga Parbat", "h": 8126, "lat": 35.2375, "lon": 74.5892, "where": "ปากีสถาน", "range": "เทือกเขาหิมาลัย" },
-    { "rank": 10, "name": "อันนาปุรณะ 1", "nameEn": "Annapurna I", "h": 8091, "lat": 28.5961, "lon": 83.8203, "where": "เนปาล", "range": "เทือกเขาหิมาลัย" }
-  ],
-  "deep": [
-    { "rank": 1, "name": "แชลเลนเจอร์ดีป · ร่องลึกมาเรียนา", "nameEn": "Challenger Deep, Mariana Trench", "h": -10935, "lat": 11.3733, "lon": 142.5917, "where": "มหาสมุทรแปซิฟิกตะวันตก ใกล้กวม" },
-    { "rank": 2, "name": "ฮอไรซันดีป · ร่องลึกตองกา", "nameEn": "Horizon Deep, Tonga Trench", "h": -10800, "lat": -23.2583, "lon": -174.7267, "where": "มหาสมุทรแปซิฟิกใต้ ใกล้ตองกา" },
-    { "rank": 3, "name": "เอมเดนดีป · ร่องลึกฟิลิปปินส์", "nameEn": "Emden Deep, Philippine Trench", "h": -10540, "lat": 10.33, "lon": 126.65, "where": "มหาสมุทรแปซิฟิก ตะวันออกของมินดาเนา" },
-    { "rank": 4, "name": "ชอลล์ดีป · ร่องลึกเคอร์มาเดก", "nameEn": "Scholl Deep, Kermadec Trench", "h": -10047, "lat": -31.93, "lon": -177.31, "where": "มหาสมุทรแปซิฟิกใต้ ตะวันออกเฉียงเหนือของนิวซีแลนด์" },
-    { "rank": 5, "name": "ร่องลึกอิซุ–โอกาซาวาระ", "nameEn": "Izu–Ogasawara (Bonin) Trench", "h": -9780, "lat": 29.07, "lon": 142.83, "where": "มหาสมุทรแปซิฟิก ใต้ญี่ปุ่น" },
-    { "rank": 6, "name": "ร่องลึกคูริล–คัมชัตกา", "nameEn": "Kuril–Kamchatka Trench", "h": -9600, "lat": 44.2, "lon": 150.6, "where": "มหาสมุทรแปซิฟิกเหนือ นอกหมู่เกาะคูริล" },
-    { "rank": 7, "name": "ร่องลึกญี่ปุ่น", "nameEn": "Japan Trench", "h": -8412, "lat": 36.05, "lon": 142.75, "where": "มหาสมุทรแปซิฟิก ตะวันออกของญี่ปุ่น" },
-    { "rank": 8, "name": "บราวน์สันดีป · ร่องลึกเปอร์โตริโก", "nameEn": "Brownson Deep, Puerto Rico Trench", "h": -8376, "lat": 19.77, "lon": -67.31, "where": "มหาสมุทรแอตแลนติก เหนือเปอร์โตริโก (จุดลึกสุดของแอตแลนติก)" },
-    { "rank": 9, "name": "แฟกทอเรียนดีป · ร่องลึกเซาท์แซนด์วิช", "nameEn": "Factorian Deep, South Sandwich Trench", "h": -8265, "lat": -55.22, "lon": -26.17, "where": "มหาสมุทรแอตแลนติกใต้ ใกล้แอนตาร์กติกา" },
-    { "rank": 10, "name": "ริชาร์ดส์ดีป · ร่องลึกเปรู–ชิลี", "nameEn": "Richards Deep, Peru–Chile Trench", "h": -8065, "lat": -23.37, "lon": -71.33, "where": "มหาสมุทรแปซิฟิกตะวันออก นอกชายฝั่งชิลี" }
-  ]
+ "note": "ความสูงของยอดเขาเป็นค่าที่ยอมรับทั่วไป (เอเวอเรสต์ 8,848.86 ม. จากการสำรวจร่วมจีน–เนปาล ปี 2020) ส่วนความลึกของร่องลึกก้นสมุทรมาจากการวัดล่าสุดที่รายงานในวิกิพีเดีย (เช่น Five Deeps Expedition ปี 2019 และการดำน้ำปี 2022) แต่ละแหล่งวัดได้ต่างกันหลายสิบเมตร และพิกัดเป็นตำแหน่งโดยประมาณของจุดลึกที่สุด",
+ "sources": [
+  "Wikipedia (en/th) articles linked per entry, text CC BY-SA 4.0",
+  "Photos: Wikimedia Commons, credited per image",
+  "Five Deeps Expedition (Stewart & Jamieson, 2019)",
+  "GEBCO Gazetteer of Undersea Feature Names"
+ ],
+ "high": [
+  {
+   "rank": 1,
+   "name": "ยอดเขาเอเวอเรสต์",
+   "nameEn": "Mount Everest",
+   "h": 8849,
+   "lat": 27.9881,
+   "lon": 86.925,
+   "where": "เนปาล / จีน (ทิเบต)",
+   "range": "เทือกเขาหิมาลัย",
+   "whereEn": "Nepal / China (Tibet)",
+   "rangeEn": "Himalayas",
+   "summaryEn": "Mount Everest (known in Nepali as Sagarmāthā, in Sherpa as Chamolangma, and in Tibetan  as Jomolangma/Čhomolangma) is the highest mountain on Earth above sea level. It lies in the Mahalangur Himal sub-range of the Himalayas and marks part of the China–Nepal border at its summit. Its height was most recently measured in 2020 through a joint survey by Nepalese and Chinese authorities as 8,848.86 m (29,031 ft 8+1⁄2 in).",
+   "summaryTh": "เอเวอเรสต์ (อังกฤษ: Everest; เนปาล: सगरमाथा, สครมาถา; ทิเบต: ཇོ་མོ་གླང་མ; จีน: 珠穆朗玛 จูมู่หลั่งหม่า) เป็นภูเขาที่สูงที่สุดในโลกที่อยู่เหนือระดับน้ำทะเล ตั้งอยู่ในหุบเขาย่อยมหาลังกูร์หิมัลในเทือกเขาหิมาลัย จุดสูงสุดของเขาเอเวอเรสต์อยู่บนพรมแดนจีน-เนปาล ปัจจุบันเอเวอเรสต์เป็นสถานที่ท่องเที่ยวสำคัญหนึ่งของเนปาลและทิเบต มีผู้คนหลั่งไหลเข้ามาปีนเขาจำนวนมาก และ ข้อมูลเมื่อ 2019 มีมากกว่า 300 คนเสียชีวิตบนเขาเอเวอเรสต์ และร่างผู้เสียชีวิตจำนวนมากถูกทิ้งไว้บนเขา",
+   "articleEn": "https://en.wikipedia.org/wiki/Mount_Everest",
+   "articleTh": "https://th.wikipedia.org/wiki/เขาเอเวอเรสต์",
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Mt._Everest_from_Gokyo_Ri_November_5%2C_2012.jpg/960px-Mt._Everest_from_Gokyo_Ri_November_5%2C_2012.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Mt._Everest_from_Gokyo_Ri_November_5,_2012.jpg",
+    "license": "CC BY-SA 3.0",
+    "artist": "Rdevany"
+   }
+  },
+  {
+   "rank": 2,
+   "name": "เคทู",
+   "nameEn": "K2",
+   "h": 8611,
+   "lat": 35.8825,
+   "lon": 76.5133,
+   "where": "ปากีสถาน / จีน",
+   "range": "เทือกเขาคาราโครัม",
+   "whereEn": "Pakistan / China",
+   "rangeEn": "Karakoram",
+   "summaryEn": "K2, also known as Mount Godwin-Austen, at 8,611 metres (28,251 ft) above sea level, is the second-highest mountain on Earth, after Mount Everest at 8,849 metres (29,032 ft). It lies in the Karakoram range, partially in the Gilgit-Baltistan region of Pakistan-administered Kashmir and partially in the China-administered Trans-Karakoram Tract in the Taxkorgan Tajik Autonomous County of Xinjiang.",
+   "summaryTh": "ยอดเขาเคทู (อังกฤษ: K2; บัลตี: Kechu, Ketu; อูรดู: کے ٹو) เป็นยอดเขาที่สูงเป็นอันดับสองของโลกรองจากยอดเขาเอเวอเรสต์ มีความสูง 8,611 เมตร (28,251 ฟุต) เป็นส่วนหนึ่งของเทือกเขาการาโกรัมซึ่งเชื่อมต่อกับแนวเทือกเขาหิมาลัยทางด้านตะวันตก และตั้งอยู่ในบริเวณรอยต่อระหว่างเขตกิลกิต-บัลติสถานของประเทศปากีสถาน กับเทศมณฑลปกครองตนเองตัชคูร์กันทาจิกในเขตปกครองตนเองซินเจียงอุยกูร์ของประเทศจีน",
+   "articleEn": "https://en.wikipedia.org/wiki/K2",
+   "articleTh": "https://th.wikipedia.org/wiki/เขาเคทู",
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c9/Chogori.jpg/960px-Chogori.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Chogori.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Zacharie Grossen"
+   }
+  },
+  {
+   "rank": 3,
+   "name": "คังเชนจุงกา",
+   "nameEn": "Kangchenjunga",
+   "h": 8586,
+   "lat": 27.7025,
+   "lon": 88.1475,
+   "where": "เนปาล / อินเดีย",
+   "range": "เทือกเขาหิมาลัย",
+   "whereEn": "Nepal / India",
+   "rangeEn": "Himalayas",
+   "summaryEn": "Kangchenjunga (Nepali: कञ्चनजङ्गा, romanized: Kañcanajaṅgā, Sherpa: གངས་ཆེན་མཛོད་ལྔ ; Wylie: Gangs Chen mdzod lnga ) is the third-highest mountain in the world. Its summit lies at 8,586 m (28,169 ft) in a section of the Himalayas, the Kangchenjunga Himal, which is bounded in the west by the Tamur River, in the north by the Lhonak River and Jongsang La, and in the east by the Teesta River. It lies in the border region between Koshi Province of Nepal and Sikkim state of India, with the West and Kangbachen peaks located in Nepal's Taplejung District and the Main, Central and South peaks directly on the border.",
+   "summaryTh": "คังเช็นเจองา (ทิเบต: གངས་ཆེན་མཛོད་ལྔ་, ไวลี: gangs chen mdzod lnga, พินอินทิเบต: kang qên zö nga, Kangchenjunga) หรือ กัญจนชังฆา (เนปาล: कञ्चनजङ्घा) เป็นยอดเขาที่สูงเป็นอันดับสามของโลก รองจากยอดเขาเอเวอเรสต์ และยอดเขาเคทู ตั้งอยู่ในเทือกเขาหิมาลัยบริเวณพรมแดนประเทศอินเดียกับเนปาล มีความสูงกว่า 8,586 เมตร หรือ 28,169 ฟุต",
+   "articleEn": "https://en.wikipedia.org/wiki/Kangchenjunga",
+   "articleTh": "https://th.wikipedia.org/wiki/เขาคังเช็นเจองา",
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ac/Kangchenjunga_PangPema.JPG/960px-Kangchenjunga_PangPema.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Kangchenjunga_PangPema.JPG",
+    "license": "CC BY 3.0",
+    "artist": "Tomabarker"
+   }
+  },
+  {
+   "rank": 4,
+   "name": "โลตเซ",
+   "nameEn": "Lhotse",
+   "h": 8516,
+   "lat": 27.9617,
+   "lon": 86.9333,
+   "where": "เนปาล / จีน (ทิเบต)",
+   "range": "เทือกเขาหิมาลัย",
+   "whereEn": "Nepal / China (Tibet)",
+   "rangeEn": "Himalayas",
+   "summaryEn": "Lhotse (Nepali: ल्होत्से, romanized: L'hōtsē [lotse]; Standard Tibetan: ལྷོ་རྩེ, romanized: lho tse, lit. 'South Peak' [l̥otse]; Chinese: 洛子峰) is the fourth-highest mountain on Earth, after Mount Everest, K2, and Kangchenjunga. At an elevation of 8,516 metres (27,940 ft) above sea level, the main summit is on the border between the Tibet Autonomous Region of China and the Khumbu region of Nepal.",
+   "summaryTh": "โลตเซ (เนปาล: ल्होत्से, อักษรโรมัน: L'hōtsē [lotse]; ทิเบต: ལྷོ་རྩེ, อักษรโรมัน: lho tse, แปลตรงตัว 'ยอดเขาใต้' [l̥otse]; จีน: 洛子峰) เป็นภูเขาที่สูงเป็นอันดับที่สี่ของโลก รองจากเขาเอเวอเรสต์, เคทู และคังเช็นเจองา ที่ระดับความสูง 8,516 เมตร (27,940 ฟุต) เหนือระดับน้ำทะเล, ยอดเขาหลักตั้งอยู่บนพรมแดนระหว่างเขตปกครองตนเองทิเบตของประเทศจีนและภูมิภาคขุมพุของประเทศเนปาล",
+   "articleEn": "https://en.wikipedia.org/wiki/Lhotse",
+   "articleTh": "https://th.wikipedia.org/wiki/เขาโลตเซ",
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Lhotse-fromChukhungRi.jpg/960px-Lhotse-fromChukhungRi.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Lhotse-fromChukhungRi.jpg",
+    "license": "CC BY-SA 3.0",
+    "artist": "Uwe Gille"
+   }
+  },
+  {
+   "rank": 5,
+   "name": "มากาลู",
+   "nameEn": "Makalu",
+   "h": 8485,
+   "lat": 27.8897,
+   "lon": 87.0889,
+   "where": "เนปาล / จีน (ทิเบต)",
+   "range": "เทือกเขาหิมาลัย",
+   "whereEn": "Nepal / China (Tibet)",
+   "rangeEn": "Himalayas",
+   "summaryEn": "Makalu (Nepali: मकालु हिमाल, romanized: Makālu himāl; Chinese: 马卡鲁峰; pinyin: Mǎkǎlǔ Fēng) is the fifth-highest mountain on Earth, with a summit at an elevation of 8,485 metres (27,838 ft) AMSL. It is located in the Mahalangur Himalayas 19 km (12 mi) southeast of Mount Everest, on the China–Nepal border. One of the eight-thousanders, Makalu is an isolated peak shaped like a four-sided pyramid.",
+   "summaryTh": "มกาลุ (เนปาล: मकालु हिमाल, อักษรโรมัน: Makālu himāl; จีน: 马卡鲁峰; พินอิน: Mǎkǎlǔ Fēng) เป็นภูเขาที่สูงเป็นอันดับ 5 ของโลก โดยมียอดเขาอยู่ที่ความสูง 8,485 เมตร (27,838 ฟุต) เหนือระดับน้ำทะเลปานกลาง ตั้งอยู่ในเขตมหาลังคูร หิมาล เทือกเขาหิมาลัย ห่างไปทางตะวันออกเฉียงใต้ของเขาเอเวอเรสต์ 19 km (12 mi) บนพรมแดนระหว่างประเทศจีนกับประเทศเนปาล มกาลุเป็นหนึ่งในยอดเขาแปดพันเมตร และเป็นยอดเขาโดดเดี่ยวที่มีรูปร่างคล้ายพีระมิดสี่ด้าน",
+   "articleEn": "https://en.wikipedia.org/wiki/Makalu",
+   "articleTh": "https://th.wikipedia.org/wiki/เขามกาลุ",
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/19/Makalu.jpg/960px-Makalu.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Makalu.jpg",
+    "license": "CC BY 2.0",
+    "artist": "Ben Tubby"
+   }
+  },
+  {
+   "rank": 6,
+   "name": "โชโอยู",
+   "nameEn": "Cho Oyu",
+   "h": 8188,
+   "lat": 28.0942,
+   "lon": 86.6608,
+   "where": "เนปาล / จีน (ทิเบต)",
+   "range": "เทือกเขาหิมาลัย",
+   "whereEn": "Nepal / China (Tibet)",
+   "rangeEn": "Himalayas",
+   "summaryEn": "Cho Oyu (Nepali: चोयु; Tibetan: ཇོ་བོ་དབུ་ཡ; Chinese: 卓奥友峰) is the sixth-highest mountain in the world at 8,188 metres (26,864 ft) above sea level. Cho Oyu means 'Turquoise Goddess' in Tibetan.  The mountain is the westernmost major peak of the Khumbu sub-section of the Mahalangur Himalaya 20 km (12 mi) west of Mount Everest.",
+   "summaryTh": "โชโอยู (Cho Oyu; เนปาล: चोयु; ทิเบต: ཇོ་བོ་དབུ་ཡ; จีน: 卓奥友峰) เป็นภูเขาที่สูงเป็นอันดับ 6 ของโลก โดยมีความสูงอยู่ที่ 8,188 เมตร (26,864 ฟุต) เหนือระดับน้ำทะเล โชโอยูมีความหมายว่า 'เทพธิดาเทอร์คอยส์' ในกลุ่มภาษาทิเบต ภูเขาลูกนี้เป็นยอดเขาหลักที่อยู่ทางตะวันตกสุดของย่อยเขา ขุมบุ ในเทือกเขามหาลังคูรหิมาล 20 km (12 mi) ทางตะวันตกของยอดเขาเอเวอเรสต์ ตัวภูเขาตั้งอยู่บนพรมแดนจีน–เนปาล ระหว่างเขตปกครองตนเองทิเบตและรัฐโกศี",
+   "articleEn": "https://en.wikipedia.org/wiki/Cho_Oyu",
+   "articleTh": "https://th.wikipedia.org/wiki/เขาโชโอยู",
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Chooyu.jpg/960px-Chooyu.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Chooyu.jpg",
+    "license": "Public domain",
+    "artist": "Robstar06 at German Wikipedia"
+   }
+  },
+  {
+   "rank": 7,
+   "name": "ธวลาคิรี 1",
+   "nameEn": "Dhaulagiri I",
+   "h": 8167,
+   "lat": 28.6983,
+   "lon": 83.4875,
+   "where": "เนปาล",
+   "range": "เทือกเขาหิมาลัย",
+   "whereEn": "Nepal",
+   "rangeEn": "Himalayas",
+   "summaryEn": "Dhaulagiri, located in Nepal, is the seventh highest mountain in the world at 8,167 metres (26,795 ft) above sea level, and the highest mountain within the borders of a single country.  Dhaulagiri I is also the highest point of the Gandaki river basin. It was first climbed on 13 May 1960 by a Swiss-Austrian-Nepali expedition.",
+   "summaryTh": "เธาลาคีรี (อักษรโรมัน: Dhaulagiri) เป็นภูเขาในประเทศเนปาลมีความสูง 8,167 เมตร หนึ่งในยอดเขาแปดพันเมตร และสูงที่สุดเป็นอันดับเจ็ดของโลก ถือเป็นเป็นภูเขาที่สูงที่สุดที่ตั้งอยู่ในพรมแดนของประเทศเดียว พิชิตสำเร็จครั้งแรกในวันที่ 13 พฤษภาคม 1960 โดยคณะนักไต่เขาชาวสวิส, ออสเตรีย และเนปาล เขาอันนาปุราณะ I (สูง 8,091 m (26,545 ft)) ตั้งอยู่ห่างไป 34 km (21 mi) ทางตะวันออกของเธาลาคีรี ชื่อเขา \"เธาลาคีริ\" (धौलागिरी) เป็นชื่อภาษาเนปาล มีที่มาจากภาษาสันสกฤตคำว่า ธวล (धवल) แปลว่าสีขาว, ความงาม และคีรี (गिरि) แปลว่าภูเขา",
+   "articleEn": "https://en.wikipedia.org/wiki/Dhaulagiri",
+   "articleTh": "https://th.wikipedia.org/wiki/เขาเธาลาคีรี",
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Dhaulagiri_-_view_from_aircraft.jpg/960px-Dhaulagiri_-_view_from_aircraft.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Dhaulagiri_-_view_from_aircraft.jpg",
+    "license": "CC BY-SA 3.0",
+    "artist": "Sergey Ashmarin"
+   }
+  },
+  {
+   "rank": 8,
+   "name": "มานาสลู",
+   "nameEn": "Manaslu",
+   "h": 8163,
+   "lat": 28.5497,
+   "lon": 84.5597,
+   "where": "เนปาล",
+   "range": "เทือกเขาหิมาลัย",
+   "whereEn": "Nepal",
+   "rangeEn": "Himalayas",
+   "summaryEn": "Manaslu (; Nepali: मनास्लु, also known as Kutang) is the eighth-highest mountain in the world at 8,163 metres (26,781 ft) above sea level. It is in the Mansiri Himal, part of the Nepalese Himalayas, in  west-central Nepal. Manaslu means \"mountain of the spirit\" and the word is derived from the Sanskrit word manasa, meaning \"intellect\" or \"soul\".",
+   "summaryTh": "มนาสลุ (เนปาล: मनास्लु; Manaslu) บ้างทับศัพท์เป็น มนัสลู เป็นภูเขาที่สูงที่สุดเป็นอันดับแปดของโลก ที่ความสูง 8,163 เมตร (26,781 ฟุต) จากระดับน้ำทะเล เป็นส่วนหนึ่งของมานสิริหิมัล ซึ่งเป็นส่วนหนึ่งของหิมาลัยในเนปาล ชื่อมนาสลุแปลว่า \"เขาแห่งวิญญาณ\" มาจากคำสันสกฤต มนส แปลว่าผู้มีปัญญาหรือดวงวิญญาณ การพิชิตเขามนาสลุครั้งแรกสำเร็จในวันที่ 9 พฤษภาคม 1956 โดย Toshio Imanishi และ Gyalzen Norbu จากญี่ปุ่น ว่ากันว่า \"มนาสลุเป็นภูเขาของชาวญี่ปุ่น เหมือนที่ชาวบริเตนมองเอเวอเรสต์เป็นเขาของตน\" อันเนื่องมาจากความพยายามที่ล้มเหลวหลายครั้งของชาวบริเตนในการพิชิตเขาเอเวอเรสต์ก่อนที่เอ็ดมันด์ ฮิลลารี จะพิชิตเขาสำเร็จ",
+   "articleEn": "https://en.wikipedia.org/wiki/Manaslu",
+   "articleTh": "https://th.wikipedia.org/wiki/เขามนาสลุ",
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Sunrise%2C_Manaslu.jpg/960px-Sunrise%2C_Manaslu.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Sunrise,_Manaslu.jpg",
+    "license": "CC BY 2.0",
+    "artist": "Ben Tubby"
+   }
+  },
+  {
+   "rank": 9,
+   "name": "นังกาปาร์บัต",
+   "nameEn": "Nanga Parbat",
+   "h": 8126,
+   "lat": 35.2375,
+   "lon": 74.5892,
+   "where": "ปากีสถาน",
+   "range": "เทือกเขาหิมาลัย",
+   "whereEn": "Pakistan",
+   "rangeEn": "Himalayas",
+   "summaryEn": "Nanga Parbat, known in Shina as Diamer, is the ninth-highest mountain on Earth with its summit at 8,126 m (26,660 ft) above sea level. Lying immediately southeast of the northernmost bend of the Indus River in the Gilgit-Baltistan region of Pakistan-administered Kashmir, Nanga Parbat is the westernmost major peak of the Himalayas, and thus in the traditional view of the Himalayas as bounded by the Indus and Yarlung Tsangpo/Brahmaputra rivers, it is the western anchor of the entire mountain range.",
+   "summaryTh": "ยอดเขานังคาปัรพัต (อูรดู: نانگا پربت, อักษรโรมัน: Nanga Parbat) เป็นยอดเขาสูงสุดในโลกอันดับที่ 9 นังกาปาร์บัตแปลว่า “ยอดเขาเปลือย” โดย “Parbat” มาจากภาษาสันสกฤตว่า“ปรฺวต” (पर्वत) ที่แปลว่าภูเขาหรือหิน (เป็นรากศัพท์ของ \"บรรพต\" ในภาษาไทย) และคำว่า “Nanga” ที่มาจากภาษาสันสกฤตว่า “นคฺน” (नग्न) ที่แปลว่าเปลือยหรือว่าง แต่เรียกอีกชื่อหนึ่งว่า “ภูเขานักฆ่า” (Killer Mountain) เพราะเป็นภูเขาที่มีอันตรายที่สุดในบรรดายอดเขาแปดพันเมตรสิบสี่ยอด โดยเฉพาะในครึ่งแรกของคริสต์ศตวรรษที่ 20 แม้หลังจากนั้นอันตรายจะลดลงแต่ยังปีนได้ยากอยู่",
+   "articleEn": "https://en.wikipedia.org/wiki/Nanga_Parbat",
+   "articleTh": "https://th.wikipedia.org/wiki/เขานังคาปัรพัต",
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Fairy_Meadows_and_the_view_of_Nanga_Parbat.jpg/960px-Fairy_Meadows_and_the_view_of_Nanga_Parbat.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Fairy_Meadows_and_the_view_of_Nanga_Parbat.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Imrankhakwani"
+   }
+  },
+  {
+   "rank": 10,
+   "name": "อันนาปุรณะ 1",
+   "nameEn": "Annapurna I",
+   "h": 8091,
+   "lat": 28.5961,
+   "lon": 83.8203,
+   "where": "เนปาล",
+   "range": "เทือกเขาหิมาลัย",
+   "whereEn": "Nepal",
+   "rangeEn": "Himalayas",
+   "summaryEn": "Annapurna (; Nepali: अन्नपूर्ण) is a mountain situated in the Annapurna mountain range of Gandaki Province, north-central Nepal. It is the 10th highest mountain in the world at 8,091 metres (26,545 ft) above sea level and is well known for the difficulty and danger involved in its ascent.",
+   "summaryTh": null,
+   "articleEn": "https://en.wikipedia.org/wiki/Annapurna",
+   "articleTh": null,
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/South_Face_of_Annapurna_I_%28Main%29.jpg/960px-South_Face_of_Annapurna_I_%28Main%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:South_Face_of_Annapurna_I_(Main).jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "PrajwalMohan"
+   }
+  }
+ ],
+ "deep": [
+  {
+   "name": "แชลเลนเจอร์ดีป · ร่องลึกมาเรียนา",
+   "nameEn": "Challenger Deep, Mariana Trench",
+   "h": -10935,
+   "lat": 11.3733,
+   "lon": 142.5917,
+   "where": "มหาสมุทรแปซิฟิกตะวันตก ใกล้กวม",
+   "whereEn": "Western Pacific, near Guam",
+   "rank": 1,
+   "summaryEn": "The Challenger Deep is the deepest known point of the seabed of Earth, located in the western Pacific Ocean at the southern end of the Mariana Trench, in the ocean territory of the Federated States of Micronesia.",
+   "summaryTh": "แชลเลนเจอร์ดีป (อังกฤษ: Challenger Deep) เป็นจุดที่ลึกที่สุดในมหาสมุทรของโลกเท่าที่รู้จัก โดยมีระดับความลึก 10,911 เมตร ตั้งอยู่ทางปลายด้านใต้สุดของร่องลึกมาเรียนา ใกล้กับกลุ่มหมู่เกาะมาเรียนา แชลเลนเจอร์ดีปมีลักษณะเป็นแอ่งขนาดเล็กที่ก้นของร่องลึกใต้มหาสมุทรรูปดวงจันทร์เสี้ยวขนาดค่อนข้างใหญ่ ซึ่งร่องเหล่านี้ก็เป็นลักษณะภูมิประเทศที่ลึกผิดปกติใต้ท้องมหาสมุทรอยู่แล้ว แผ่นดินที่อยู่ใกล้กับแชลเลนเจอร์ดีปที่สุด คือ เกาะไฟส์ (ส่วนหนึ่งของหมู่เกาะแยป) ห่างออกไป 289 กิโลเมตรทางทิศตะวันตกเฉียงใต้ และกวม ห่างออกไป 306 กิโลเมตรทางทิศตะวันออกเฉียงเหนือ แอ่งดังกล่าวได้ชื่อตามเรือสำรวจราชนาวี เอชเอ็มเอส แชลเลนเจอร์ ซึ่งจัดการสำรวจใน ค.ศ. 1872–76 เป็นการบันทึกความลึกของมหาสมุทรเป็นครั้งแรก",
+   "articleEn": "https://en.wikipedia.org/wiki/Challenger_Deep",
+   "articleTh": "https://th.wikipedia.org/wiki/แชลเลนเจอร์ดีป",
+   "image": {
+    "src": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Marianatrenchmap.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "page": "https://commons.wikimedia.org/wiki/File:Marianatrenchmap.png",
+    "license": "CC BY 2.5",
+    "artist": "wallace"
+   }
+  },
+  {
+   "name": "ฮอไรซันดีป · ร่องลึกตองกา",
+   "nameEn": "Horizon Deep, Tonga Trench",
+   "h": -10823,
+   "lat": -23.2583,
+   "lon": -174.7267,
+   "where": "มหาสมุทรแปซิฟิกใต้ ใกล้ตองกา",
+   "whereEn": "South Pacific, near Tonga",
+   "rank": 2,
+   "summaryEn": "The Tonga Trench is an oceanic trench located in the southwestern Pacific Ocean. It is the deepest trench in the Southern hemisphere and the second deepest on Earth after the Mariana Trench. The fastest plate-tectonic velocity on Earth is occurring at this location, as the Pacific plate is being subducted westward in the trench.",
+   "summaryTh": "ร่องลึกตองงา (อังกฤษ: Tonga Trench) ตั้งอยู่ทางตะวันออกของหมู่เกาะตองงา ประเทศตองงา จุดที่ลึกที่สุดมีความลึก 10,882 เมตร ร่องลึกนี้ถือเป็นร่องลึกที่ลึกสุดในซีกโลกใต้ และลึกที่สุดเป็นอันดับที่ 2 ของโลก การเคลื่อนที่ของแผ่นเผลือกโลกที่เร็วที่สุดเกิดขึ้นที่ร่องลึกนี้ ร่องลึกนี้เกิดจากการที่แผ่นแปซิฟิกมุดตัวลงไปใต้แผ่นออสเตรเลีย",
+   "articleEn": "https://en.wikipedia.org/wiki/Tonga_Trench",
+   "articleTh": "https://th.wikipedia.org/wiki/ร่องลึกตองงา",
+   "image": {
+    "src": "https://upload.wikimedia.org/wikipedia/commons/d/d4/Kermadec_Arc.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "page": "https://commons.wikimedia.org/wiki/File:Kermadec_Arc.jpg",
+    "license": "Public domain",
+    "artist": ""
+   }
+  },
+  {
+   "name": "เอมเดนดีป · ร่องลึกฟิลิปปินส์",
+   "nameEn": "Emden Deep, Philippine Trench",
+   "h": -10540,
+   "lat": 10.33,
+   "lon": 126.65,
+   "where": "มหาสมุทรแปซิฟิก ตะวันออกของมินดาเนา",
+   "whereEn": "Pacific, east of Mindanao",
+   "rank": 3,
+   "summaryEn": "The Philippine Trench (also called the Philippine Deep, Mindanao Trench, and the Mindanao Deep) is a submarine trench to the east of the Philippines. The trench is located in the Philippine sea of the western North Pacific Ocean and continues NNW-SSE. It has a length of approximately 1,320 kilometres (820 miles) and a width of about 30 km (19 mi) from the center of the Philippine island of Luzon trending southeast to the northern Maluku island of Halmahera in Indonesia. At its deepest point, the trench reaches 10,540 meters (34,580 ft or 5,760 fathoms).",
+   "summaryTh": "ร่องลึกฟิลิปปินส์ (อังกฤษ: Philippine Trench) ตั้งอยู่บริเวณตะวันออกของประเทศฟิลิปปินส์ มีความยาวประมาณ 1,320 กิโลเมตร กว้างโดยประมาณ 30 กิโลเมตร จุดที่ลึกที่สุดลึกประมาณ 10,540 เมตร",
+   "articleEn": "https://en.wikipedia.org/wiki/Philippine_Trench",
+   "articleTh": "https://th.wikipedia.org/wiki/ร่องลึกฟิลิปปินส์",
+   "image": {
+    "src": "https://upload.wikimedia.org/wikipedia/commons/6/61/Philippine_Sea_location.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "page": "https://commons.wikimedia.org/wiki/File:Philippine_Sea_location.jpg",
+    "license": "Public domain",
+    "artist": ""
+   }
+  },
+  {
+   "name": "ร่องลึกเคอร์มาเดก",
+   "nameEn": "Kermadec Trench",
+   "h": -10047,
+   "lat": -31.93,
+   "lon": -177.31,
+   "where": "แปซิฟิกใต้ ตะวันออกเฉียงเหนือของนิวซีแลนด์",
+   "whereEn": "South Pacific, northeast of New Zealand",
+   "rank": 4,
+   "summaryEn": "The Kermadec Trench is a linear ocean trench in the south Pacific Ocean.  It stretches about 1,000 km (620 mi) from the Louisville Seamount Chain in the north (26°S) to the Hikurangi Plateau in the south (37°S), north-east of New Zealand's North Island. Together with the Tonga Trench to the north, it forms the 2,000 km (1,200 mi)-long, near-linear Kermadec-Tonga subduction system, which began to evolve in the Eocene when the Pacific plate started to subduct beneath the Australian plate.",
+   "summaryTh": null,
+   "articleEn": "https://en.wikipedia.org/wiki/Kermadec_Trench",
+   "articleTh": null,
+   "image": {
+    "src": "https://upload.wikimedia.org/wikipedia/commons/d/d4/Kermadec_Arc.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "page": "https://commons.wikimedia.org/wiki/File:Kermadec_Arc.jpg",
+    "license": "Public domain",
+    "artist": ""
+   }
+  },
+  {
+   "name": "ร่องลึกอิซุ–โอกาซาวาระ",
+   "nameEn": "Izu–Ogasawara (Bonin) Trench",
+   "h": -9826,
+   "lat": 29.07,
+   "lon": 142.83,
+   "where": "มหาสมุทรแปซิฟิก ทางใต้ของญี่ปุ่น",
+   "whereEn": "Pacific, south of Japan",
+   "rank": 5,
+   "summaryEn": "The Izu–Ogasawara Trench (伊豆・小笠原海溝, Izu–Ogasawara Kaikō), also known as Izu–Bonin Trench, is an oceanic trench in the western Pacific Ocean, consisting of the Izu Trench (at the north) and the Bonin Trench (at the south, west of the Ogasawara Plateau).",
+   "summaryTh": null,
+   "articleEn": "https://en.wikipedia.org/wiki/Izu–Ogasawara_Trench",
+   "articleTh": null,
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/Map00148_%2828286522445%29.jpg/960px-Map00148_%2828286522445%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Map00148_(28286522445).jpg",
+    "license": "CC BY 2.0",
+    "artist": "NOAA Photo Library"
+   }
+  },
+  {
+   "name": "ร่องลึกคูริล–คัมชัตกา",
+   "nameEn": "Kuril–Kamchatka Trench",
+   "h": -9600,
+   "lat": 44.2,
+   "lon": 150.6,
+   "where": "แปซิฟิกเหนือ นอกหมู่เกาะคูริล",
+   "whereEn": "North Pacific, off the Kuril Islands",
+   "rank": 6,
+   "summaryEn": "The Kuril–Kamchatka Trench or Kuril Trench (Russian: Курило-Камчатский жёлоб, Kurilo-Kamchatskii Zhyolob), known in Japan as Chishima Trench (Japanese: 千島海溝, Hepburn: Chishima Kaikō), is an oceanic trench in the northwest Pacific Ocean. It lies off the southeast coast of Kamchatka and parallels the Kuril Island chain to meet the Japan Trench east of Hokkaido. It extends from a triple junction with the Ulakhan Fault and the Aleutian Trench near the Commander Islands, Russia, in the northeast, to the intersection with the Japan Trench in the southwest.",
+   "summaryTh": "ร่องลึกก้นสมุทรคูริล–คัมชัตคา (รัสเซีย: Курило-Камчатский жёлоб, Kurilo-Kamchatskii Zhyolob) เป็นร่องลึกก้นสมุทรที่อยู่ทางทิศตะวันตกเฉียงเหนือของมหาสมุทรแปซิฟิก ทอดตัวยาวขนานกับหมู่เกาะคูริล ทางเหนือบรรจบกับร่องลึกก้นสมุทรอะลูเชียนบริเวณหมู่เกาะคอมมานเดอร์ ส่วนทางใต้บรรจบกับร่องลึกบาดาลญี่ปุ่นตรงบริเวณทางตะวันออกของเกาะฮกไกโด",
+   "articleEn": "https://en.wikipedia.org/wiki/Kuril–Kamchatka_Trench",
+   "articleTh": "https://th.wikipedia.org/wiki/ร่องลึกก้นสมุทรคูริล–คัมชัตคา",
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Kuril_Trench.jpg/960px-Kuril_Trench.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:Kuril_Trench.jpg",
+    "license": "Public domain",
+    "artist": ""
+   }
+  },
+  {
+   "name": "บราวน์สันดีป · ร่องลึกเปอร์โตริโก",
+   "nameEn": "Brownson Deep, Puerto Rico Trench",
+   "h": -8376,
+   "lat": 19.7136,
+   "lon": -67.3108,
+   "where": "มหาสมุทรแอตแลนติก เหนือเปอร์โตริโก (จุดลึกที่สุดของแอตแลนติก)",
+   "whereEn": "Atlantic, north of Puerto Rico (deepest in the Atlantic)",
+   "rank": 7,
+   "summaryEn": "The Puerto Rico Trench is located on the boundary between the North Atlantic Ocean and Caribbean Sea, parallel to and north of Puerto Rico, where the oceanic trench reaches the deepest points in the Atlantic Ocean. The trench is associated with a complex transition from the Lesser Antilles frontal subduction zone between the South American plate and Caribbean plate to the oblique subduction zone and the strike-slip transform fault zone between the North American plate and Caribbean plate, which extends from the Puerto Rico Trench at the Puerto Rico–Virgin Islands microplate through the Cayman Trough at the Gonâve microplate to the Middle America Trench at the Cocos plate.",
+   "summaryTh": "ร่องลึกปวยร์โตรีโก (อังกฤษ: Puerto Rico Trench) ตั้งอยู่ชายฝั่งทางทิศเหนือของเกาะปวยร์โตรีโก มีความยาวประมาณ 800 กิโลเมตร จุดที่ลึกที่สุดลึก 8,605 เมตร",
+   "articleEn": "https://en.wikipedia.org/wiki/Puerto_Rico_Trench",
+   "articleTh": "https://th.wikipedia.org/wiki/ร่องลึกปวยร์โตรีโก",
+   "image": {
+    "src": "https://upload.wikimedia.org/wikipedia/commons/3/35/Caribbean-map.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "page": "https://commons.wikimedia.org/wiki/File:Caribbean-map.png",
+    "license": "Public domain",
+    "artist": "The original uploader was Vsmith at English Wikipedia."
+   }
+  },
+  {
+   "name": "ร่องลึกเซาท์แซนด์วิช",
+   "nameEn": "South Sandwich Trench",
+   "h": -8266,
+   "lat": -55.22,
+   "lon": -26.17,
+   "where": "มหาสมุทรแอตแลนติกใต้ (จุดลึกที่สุดของมหาสมุทรใต้)",
+   "whereEn": "South Atlantic (deepest in the Southern Ocean)",
+   "rank": 8,
+   "summaryEn": "The South Sandwich Trench is a deep arcuate trench in the South Atlantic Ocean lying 100 kilometres (62 mi) to the east of the South Sandwich Islands. It is the deepest trench of the Southern Atlantic Ocean, and the second-deepest of the Atlantic Ocean after the Puerto Rico Trench. Since the trench extends south of the 60th parallel south, it also contains the deepest point in the Southern Ocean.",
+   "summaryTh": null,
+   "articleEn": "https://en.wikipedia.org/wiki/South_Sandwich_Trench",
+   "articleTh": null,
+   "image": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/East_Scotia_Ridge_vents_map.png/960px-East_Scotia_Ridge_vents_map.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://commons.wikimedia.org/wiki/File:East_Scotia_Ridge_vents_map.png",
+    "license": "CC BY 2.0",
+    "artist": "Alex D. Rogers, Paul A. Tyler, Douglas P. Connelly, Jon T. Copley, Rachael James"
+   }
+  },
+  {
+   "name": "ริชาร์ดส์ดีป · ร่องลึกเปรู–ชิลี",
+   "nameEn": "Richards Deep, Peru–Chile Trench",
+   "h": -8065,
+   "lat": -23.1792,
+   "lon": -71.3114,
+   "where": "แปซิฟิกตะวันออก นอกชายฝั่งชิลี",
+   "whereEn": "Eastern Pacific, off Chile",
+   "rank": 9,
+   "summaryEn": "The Peru–Chile Trench, also known as the Atacama Trench, is an oceanic trench in the eastern Pacific Ocean, about 160 kilometres (99 mi) off the coast of Peru and Chile. It reaches a maximum depth of 8,065 m (26,460 ft) below sea level in Richards Deep (23°10′45″S 71°18′41″W) and is approximately 5,900 km (3,666 mi) long; its mean width is 64 km (40 mi) and it covers an expanse of some 590,000 km2 (230,000 mi2).",
+   "summaryTh": "ร่องลึกเปรู-ชิลี (Peru-Chile Trench) หรือร่องลึกอาทากามา ตั้งอยู่บริเวณชายฝั่งตะวันตกของประเทศเปรูและประเทศชิลี มีความยาวประมาณ 5,900 กิโลเมตร จุดที่ลึกที่สุดลึก 8,065 เมตร",
+   "articleEn": "https://en.wikipedia.org/wiki/Peru–Chile_Trench",
+   "articleTh": "https://th.wikipedia.org/wiki/ร่องลึกเปรู-ชิลี",
+   "image": null
+  },
+  {
+   "name": "ร่องลึกญี่ปุ่น",
+   "nameEn": "Japan Trench",
+   "h": -8046,
+   "lat": 36.05,
+   "lon": 142.75,
+   "where": "มหาสมุทรแปซิฟิก ตะวันออกของญี่ปุ่น",
+   "whereEn": "Pacific, east of Japan",
+   "rank": 10,
+   "summaryEn": "The Japan Trench is an oceanic trench part of the Pacific Ring of Fire off northeast Japan. It extends from the Kuril Islands to the northern end of the Izu Islands, and is 8,046 metres (26,398 ft) at its deepest. It links the Kuril–Kamchatka Trench to the north and the Izu–Ogasawara Trench to its south with a length of 800 kilometres (497 mi).",
+   "summaryTh": "ร่องลึกบาดาลญี่ปุ่น (ญี่ปุ่น: 日本海溝, นิฮงไคโก; อังกฤษ: Japan Trench) คือร่องลึกก้นสมุทรที่อยู่ในแนววงแหวนไฟทางตะวันออกเฉียงเหนือของประเทศญี่ปุ่น ร่องลึกนี้ทอดตัวตั้งแต่หมู่เกาะคูริลยาวลงมาถึงหมู่เกาะอิซุ จุดที่ลึกที่สุดลึกถึง 8,046 เมตร ร่องลึกบาดาลญี่ปุ่นเป็นร่องลึกที่อยู่ระหว่างกลางร่องลึกก้นสมุทรคูริล–คัมชัตคาที่อยู่ทางเหนือ กับร่องลึกก้นสมุทรอิซุ–โองาซาวาระที่อยู่ทางใต้ แนวร่องลึกมีความยาวประมาณ 800 กม.",
+   "articleEn": "https://en.wikipedia.org/wiki/Japan_Trench",
+   "articleTh": "https://th.wikipedia.org/wiki/ร่องลึกบาดาลญี่ปุ่น",
+   "image": {
+    "src": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Japan_Trench_Map.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "page": "https://commons.wikimedia.org/wiki/File:Japan_Trench_Map.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "KAlder10"
+   }
+  }
+ ],
+ "noteEn": "Peak heights are the commonly accepted values (Everest 8,848.86 m, China–Nepal survey 2020). Trench depths are the latest measurements reported on Wikipedia (e.g. Five Deeps Expedition 2019, 2022 dives); sources differ by tens of metres, and positions of the deepest points are approximate."
 }

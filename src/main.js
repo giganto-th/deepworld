@@ -9,8 +9,9 @@ import {
   createSurface, createDrapedLines, createStarfield, createMask, geojsonLines, latLonToVec3, vec3ToLatLon,
 } from './globe.js';
 import { bbox, extremes, createPin, inRings, provinceTileRange } from './province.js';
+import { t, lang, applyDom, switchLanguage, pageUrl } from './i18n.js';
 import {
-  fmt, fmtH, initDrawers, initPopover, bindInputs, setStatus, createLegend, updateScaleBar, createSearch,
+  fmt, fmtH, fmtM, fmtDist, initDrawers, initPopover, bindInputs, setStatus, createLegend, updateScaleBar, createSearch,
 } from './ui.js';
 
 const PLATES_URL =
@@ -47,10 +48,11 @@ const PLACES = {
   thailand: HOME,
   himalaya: { lat: 31, lon: 85, dist: 2.0 },
 };
-const REGIONS = {
-  North: 'ภาคเหนือ', Northeast: 'ภาคตะวันออกเฉียงเหนือ', Central: 'ภาคกลาง',
-  East: 'ภาคตะวันออก', West: 'ภาคตะวันตก', South: 'ภาคใต้',
-};
+const REGION_CODES = ['North', 'Northeast', 'Central', 'East', 'West', 'South'];
+const regionName = (code) => (code ? t(`region.${code}`) : '');
+const EN = lang === 'en';
+// Localized name of a record that carries Thai `name` and English `nameEn`.
+const nm = (o) => (EN ? o.nameEn || o.name : o.name);
 
 // Detail patches: below this altitude (in Earth radii) finer tiles are streamed in.
 const DETAIL_MAX_ALT = 0.5;
@@ -182,20 +184,20 @@ function thaiTiles(maxZoom) {
 }
 
 async function loadThailand(maxZoom, { preview = false } = {}) {
-  const t = thaiTiles(maxZoom);
-  const label = preview ? 'กำลังโหลดประเทศไทย' : 'กำลังโหลดประเทศไทยแบบละเอียด';
-  task('thai', `${label} z${t.z}`, 0);
-  const merc = await loadMercatorRegion(t.z, t.x0, t.y0, t.nx, t.ny, {
-    onProgress: (p, done, total) => task('thai', `${label} z${t.z} · ${done}/${total}`, p),
+  const tile = thaiTiles(maxZoom);
+  const label = t(preview ? 'status.thai' : 'status.thaiDetail');
+  task('thai', `${label} z${tile.z}`, 0);
+  const merc = await loadMercatorRegion(tile.z, tile.x0, tile.y0, tile.nx, tile.ny, {
+    onProgress: (p, done, total) => task('thai', `${label} z${tile.z} · ${done}/${total}`, p),
   });
   await new Promise(requestAnimationFrame);
   despike(merc);
   const grid = reproject(merc, merc.width, merc.height, {
-    lonMin: tileLon(t.x0, t.z), lonMax: tileLon(t.x0 + t.nx, t.z),
-    latMax: tileLat(t.y0, t.z), latMin: tileLat(t.y0 + t.ny, t.z),
+    lonMin: tileLon(tile.x0, tile.z), lonMax: tileLon(tile.x0 + tile.nx, tile.z),
+    latMax: tileLat(tile.y0, tile.z), latMin: tileLat(tile.y0 + tile.ny, tile.z),
   });
   if (globe) { scene.remove(globe.mesh); globe.dispose(); }
-  baseZoom = t.z;
+  baseZoom = tile.z;
   globe = createSurface(grid, { segments: 1024 });
   if (thaiMask) { globe.setMask(thaiMask); thaiRange(); }
   scene.add(globe.mesh);
@@ -203,7 +205,7 @@ async function loadThailand(maxZoom, { preview = false } = {}) {
   applyState();
   task('thai', null);
   const mpp = ((grid.lonMax - grid.lonMin) / grid.width) * d2r * EARTH_RADIUS * Math.cos(13 * d2r);
-  $('stats').textContent = `ประเทศไทย z${t.z} · ${grid.width}×${grid.height} · ~${fmt(mpp)} ม./พิกเซล`;
+  $('stats').textContent = t('stats.thai', { z: tile.z, w: grid.width, h: grid.height, m: fmtDist(mpp) });
   setDetailStatus();
 }
 
@@ -242,8 +244,9 @@ function applyThaiMask() {
 async function loadQuality(key) {
   const q = QUALITY[key];
   const id = ++loadId;
-  task('globe', `กำลังโหลดข้อมูลความสูงทั้งโลก (${4 ** q.zoom} tiles)`, 0);
-  const grid = await loadGlobal(q.zoom, (p) => id === loadId && task('globe', `กำลังโหลดข้อมูลความสูงทั้งโลก (${4 ** q.zoom} tiles)`, p));
+  const label = t('status.globe', { n: 4 ** q.zoom });
+  task('globe', label, 0);
+  const grid = await loadGlobal(q.zoom, (p) => id === loadId && task('globe', label, p));
   if (id !== loadId) return; // superseded by a newer quality choice
 
   if (globe) { scene.remove(globe.mesh); globe.dispose(); }
@@ -254,8 +257,8 @@ async function loadQuality(key) {
   applyState();
   task('globe', null);
   $('stats').textContent =
-    `ภาพรวม ${grid.width}×${grid.height} · ต่ำสุด ${fmt(grid.min)} ม. · สูงสุด ${fmt(grid.max)} ม.` +
-    (grid.failed ? ` · โหลดไม่สำเร็จ ${grid.failed} tiles` : '');
+    t('stats.world', { w: grid.width, h: grid.height, min: fmtM(grid.min), max: fmtM(grid.max) }) +
+    (grid.failed ? t('stats.failed', { n: grid.failed }) : '');
 }
 
 // ---------- vector data ----------
@@ -297,7 +300,7 @@ async function loadProvinces() {
     const labels = features.map((f) => {
       const el = document.createElement('div');
       el.className = 'label';
-      el.textContent = f.name;
+      el.textContent = nm(f);
       $('labels').appendChild(el);
       return { el, f, pos: new THREE.Vector3() };
     });
@@ -320,13 +323,17 @@ async function loadSubdistricts() {
     for (const f of json.features) {
       const p = f.properties;
       const lines = geojsonLines(f.geometry);
-      const t = { name: p.tam_th, amp: p.amp_th, lines, bbox: bbox({ lines }) };
+      const tb = { name: p.tam_th, nameEn: p.tam_en, amp: p.amp_th, ampEn: p.amp_en, lines, bbox: bbox({ lines }) };
       if (!map.has(p.pro_code)) map.set(p.pro_code, []);
-      map.get(p.pro_code).push(t);
+      map.get(p.pro_code).push(tb);
     }
     tambons = map;
     updateSearchIndex();
-    if (view) { showTambonLines(view.f); fillInspectorAdmin(view.f); }
+    if (view) {
+      showTambonLines(view.f);
+      fillInspectorAdmin(view.f);
+      if (view.ex) applyExtremes(view.f, view.ex, view.exPre); // place names need tambons
+    }
   } catch (e) {
     console.warn('subdistricts unavailable', e);
   }
@@ -340,7 +347,8 @@ async function loadExtremeData() {
 }
 
 const isBkk = (f) => f.code === '10';
-const provinceTitle = (f) => (isBkk(f) ? f.name : `จ.${f.name}`);
+const provinceTitle = (f) => (isBkk(f) ? nm(f) : t('province.title', { n: nm(f) }));
+const ampName = (tb) => (EN ? tb.ampEn || tb.amp : tb.amp);
 
 // Districts of a province with their tambons and combined bounds.
 function amphoesOf(f) {
@@ -354,13 +362,14 @@ function amphoesOf(f) {
   return [...by.entries()]
     .map(([name, ts]) => ({
       name,
+      nameEn: ts[0].ampEn,
       tambons: ts,
       bbox: ts.reduce((b, t) => ({
         latMin: Math.min(b.latMin, t.bbox.latMin), latMax: Math.max(b.latMax, t.bbox.latMax),
         lonMin: Math.min(b.lonMin, t.bbox.lonMin), lonMax: Math.max(b.lonMax, t.bbox.lonMax),
       }), { latMin: Infinity, latMax: -Infinity, lonMin: Infinity, lonMax: -Infinity }),
     }))
-    .sort((a, b) => a.name.localeCompare(b.name, 'th'));
+    .sort((a, b) => nm(a).localeCompare(nm(b), EN ? 'en' : 'th'));
 }
 
 function showTambonLines(f) {
@@ -489,15 +498,15 @@ function provinceTiles(b) {
 }
 
 async function loadProvinceDetail(b) {
-  const { t, maxDim } = provinceTiles(b);
-  const done = () => { if (view && patch) $('pi-res').textContent = `ภูมิประเทศ z${patchTiles.z} · ~${fmt(gridMpp(patch.grid))} ม./พิกเซล · กรองค่าผิดพลาดแล้ว`; };
-  if (covers(patchTiles, t)) { done(); return; }
-  $('pi-res').textContent = `กำลังโหลดข้อมูลความสูงละเอียด z${t.z}…`;
-  await loadPatch(t, {
+  const { t: tile, maxDim } = provinceTiles(b);
+  const done = () => { if (view && patch) $('pi-res').textContent = t('pi.res', { z: patchTiles.z, m: fmtDist(gridMpp(patch.grid)) }); };
+  if (covers(patchTiles, tile)) { done(); return; }
+  $('pi-res').textContent = t('pi.loading', { z: tile.z });
+  await loadPatch(tile, {
     maxDim,
     segments: 640,
     onProgress: (done, total) => {
-      if (view) $('pi-res').textContent = `กำลังโหลดข้อมูลความสูงละเอียด z${t.z} · ${done}/${total} tiles`;
+      if (view) $('pi-res').textContent = t('pi.loadingN', { z: tile.z, done, total });
     },
   });
   done();
@@ -509,6 +518,7 @@ const gridMpp = (g) =>
 // Fill the inspector, pins and legend from extremes (precomputed or just measured).
 function applyExtremes(f, ex, precomputed) {
   view.ex = ex;
+  view.exPre = precomputed;
   clearPins();
   const make = (pt, color, cls, text) => {
     const pin = createPin(color);
@@ -520,24 +530,25 @@ function applyExtremes(f, ex, precomputed) {
     return { pin, el, pt };
   };
   view.pins = [
-    make(ex.max, 0xff6b57, 'hi', `▲ ${ex.max.name ?? 'สูงสุด'}`),
-    make(ex.min, 0x3d9bff, 'lo', `▼ ${ex.min.name ?? 'ต่ำสุด'}`),
+    make(ex.max, 0xff6b57, 'hi', `▲ ${(EN ? ex.max.nameEn : ex.max.name) ?? t('pin.max')}`),
+    make(ex.min, 0x3d9bff, 'lo', `▼ ${(EN ? ex.min.nameEn : ex.min.name) ?? t('pin.min')}`),
   ];
   placePins();
   const where = (pt) => `${pt.lat.toFixed(3)}°N ${pt.lon.toFixed(3)}°E`;
   // Precomputed points carry a peak name and/or "ต.… อ.…"; measured ones get the tambon now.
-  const label = (pt) => [pt.name, pt.place ?? placeName(f, tambonAt(f, pt.lat, pt.lon))].filter(Boolean).join(' · ');
-  $('pi-max').textContent = `${fmt(ex.max.h)} ม.`;
+  const label = (pt) => [EN ? pt.nameEn : pt.name,
+    (!EN && pt.place) || placeName(f, tambonAt(f, pt.lat, pt.lon), { province: false })].filter(Boolean).join(' · ');
+  $('pi-max').textContent = fmtM(ex.max.h);
   $('pi-max-name').textContent = label(ex.max);
   $('pi-max-at').textContent = where(ex.max);
-  $('pi-min').textContent = `${fmt(ex.min.h)} ม.`;
+  $('pi-min').textContent = fmtM(ex.min.h);
   $('pi-min-name').textContent = label(ex.min);
   $('pi-min-at').textContent = where(ex.min);
   $('pi-x-note').hidden = !(ex.max.h < 300 && !ex.max.name);
   renderHistogram(ex);
   $('pi-hist-note').textContent = precomputed
-    ? `ข้อมูลที่คำนวณไว้ล่วงหน้า · ~${fmt(ex.mpp)} ม./พิกเซล`
-    : `คำนวณจากกริด ~${fmt(ex.mpp)} ม./พิกเซล`;
+    ? t('pi.histPre', { m: fmtDist(ex.mpp) })
+    : t('pi.histLive', { m: fmtDist(ex.mpp) });
   updateRange();
 }
 
@@ -557,7 +568,7 @@ function renderHistogram(ex) {
   });
   $('pi-hist-min').textContent = fmt(ex.min.h);
   $('pi-hist-mid').textContent = fmt((ex.min.h + ex.max.h) / 2);
-  $('pi-hist-max').textContent = `${fmt(ex.max.h)} ม.`;
+  $('pi-hist-max').textContent = fmtM(ex.max.h);
 }
 
 function placePins() {
@@ -582,8 +593,8 @@ function clearPins() {
 
 function showInspector(f) {
   $('pi-name').textContent = provinceTitle(f);
-  $('crumb-province').textContent = f.name;
-  $('crumb-region').textContent = REGIONS[f.region] ?? '';
+  $('crumb-province').textContent = nm(f);
+  $('crumb-region').textContent = regionName(f.region);
   if (view.f === f && view.ex) return;
   for (const id of ['pi-max', 'pi-min']) $(id).textContent = '…';
   $('pi-x-note').hidden = true;
@@ -596,22 +607,22 @@ function showInspector(f) {
 function fillInspectorAdmin(f) {
   const amps = amphoesOf(f);
   const nTam = tambons?.get(f.code)?.length;
-  $('pi-sub').textContent = [f.nameEn, `${fmt(f.area)} ตร.กม.`,
-    amps.length ? `${amps.length} ${isBkk(f) ? 'เขต' : 'อำเภอ'}` : '',
-    nTam ? `${nTam} ${isBkk(f) ? 'แขวง' : 'ตำบล'}` : ''].filter(Boolean).join(' · ');
-  $('pi-amphoe-title').textContent = amps.length ? `${isBkk(f) ? 'เขต' : 'อำเภอ'} (${amps.length})` : 'อำเภอ';
+  $('pi-sub').textContent = [EN ? f.name : f.nameEn, `${fmt(f.area)} ${t('unit.km2')}`,
+    amps.length ? `${fmt(amps.length)} ${t(isBkk(f) ? 'unit.khet' : 'unit.amphoe')}` : '',
+    nTam ? `${fmt(nTam)} ${t(isBkk(f) ? 'unit.khwaeng' : 'unit.tambon')}` : ''].filter(Boolean).join(' · ');
+  $('pi-amphoe-title').textContent = amps.length ? t(isBkk(f) ? 'pi.khetN' : 'pi.amphoeN', { n: amps.length }) : t('pi.amphoe');
   const list = $('pi-amphoe');
   list.innerHTML = '';
   if (!amps.length) {
-    list.innerHTML = '<p class="hint">กำลังโหลดข้อมูลอำเภอ…</p>';
+    list.innerHTML = `<p class="hint">${t('pi.loadingAdmin')}</p>`;
     return;
   }
   for (const a of amps) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'row-btn';
-    btn.innerHTML = `<span></span><small>${a.tambons.length} ${isBkk(f) ? 'แขวง' : 'ต.'}</small>`;
-    btn.firstChild.textContent = a.name;
+    btn.innerHTML = `<span></span><small>${a.tambons.length} ${t(isBkk(f) ? 'unit.khwaeng' : 'unit.tambonShort')}</small>`;
+    btn.firstChild.textContent = nm(a);
     btn.addEventListener('click', () => {
       for (const b of list.children) b.removeAttribute('aria-current');
       btn.setAttribute('aria-current', 'true');
@@ -624,7 +635,7 @@ function fillInspectorAdmin(f) {
 function showExagNote(prev) {
   const note = $('pi-exag-note');
   note.hidden = false;
-  note.innerHTML = `ปรับขยายความสูงเป็น ${PROVINCE_EXAG}× เพื่อให้ภูเขาไม่สูงเกินจริงในมุมนี้ (เดิม ${prev}×) · <button type="button">ใช้ ${prev}×</button>`;
+  note.innerHTML = t('pi.exagNote', { to: PROVINCE_EXAG, from: prev });
   note.querySelector('button').addEventListener('click', () => { setExaggeration(prev); note.hidden = true; });
 }
 
@@ -724,14 +735,14 @@ function wantedTiles() {
 const covers = (a, b) =>
   a && a.z === b.z && b.x0 >= a.x0 && b.x0 + b.nx <= a.x0 + a.nx && b.y0 >= a.y0 && b.y0 + b.ny <= a.y0 + a.ny;
 
-async function loadPatch(t, { maxDim = 3072, segments = 320, onProgress = () => {} } = {}) {
+async function loadPatch(tile, { maxDim = 3072, segments = 320, onProgress = () => {} } = {}) {
   const id = ++detailId;
-  task('detail', `กำลังโหลดรายละเอียด z${t.z}`, 0);
-  const merc = await loadMercatorRegion(t.z, t.x0, t.y0, t.nx, t.ny, {
+  task('detail', t('status.detail', { z: tile.z }), 0);
+  const merc = await loadMercatorRegion(tile.z, tile.x0, tile.y0, tile.nx, tile.ny, {
     isStale: () => id !== detailId,
     onProgress: (p, done, total) => {
       if (id !== detailId) return;
-      task('detail', `กำลังโหลดรายละเอียด z${t.z} · ${done}/${total}`, p);
+      task('detail', `${t('status.detail', { z: tile.z })} · ${done}/${total}`, p);
       onProgress(done, total);
     },
   });
@@ -739,17 +750,17 @@ async function loadPatch(t, { maxDim = 3072, segments = 320, onProgress = () => 
   await new Promise(requestAnimationFrame); // let the status text paint before heavy work
   despike(merc);
   const bounds = {
-    lonMin: tileLon(t.x0, t.z), lonMax: tileLon(t.x0 + t.nx, t.z),
-    latMax: tileLat(t.y0, t.z), latMin: tileLat(t.y0 + t.ny, t.z),
+    lonMin: tileLon(tile.x0, tile.z), lonMax: tileLon(tile.x0 + tile.nx, tile.z),
+    latMax: tileLat(tile.y0, tile.z), latMin: tileLat(tile.y0 + tile.ny, tile.z),
   };
   const grid = reproject(merc, Math.min(merc.width, maxDim), Math.min(merc.height, maxDim), bounds);
-  if (t.z >= 10 && !THAI_MODE) patchSeaFromGlobe(grid); // /thai masks the sea anyway
+  if (tile.z >= 10 && !THAI_MODE) patchSeaFromGlobe(grid); // /thai masks the sea anyway
   if (id !== detailId) return;
   const next = createSurface(grid, { segments });
   if (thaiMask) next.setMask(thaiMask);
   if (patch) { scene.remove(patch.mesh); patch.dispose(); }
   patch = next;
-  patchTiles = t;
+  patchTiles = tile;
   scene.add(patch.mesh);
   globe.setHole(patch);
   applyState();
@@ -784,11 +795,11 @@ function setDetailStatus() {
   const el = $('detail');
   if (!patchTiles) {
     el.textContent = THAI_MODE
-      ? `ภาพรวมประเทศไทย z${baseZoom} · ซูมเข้าเพื่อโหลดละเอียดถึง ~38 ม./พิกเซล`
-      : 'ภาพรวมทั้งโลก · ซูมเข้าเพื่อโหลดละเอียดขึ้น';
+      ? t('detail.thai', { z: baseZoom })
+      : t('detail.world');
     return;
   }
-  el.textContent = `รายละเอียดตอนนี้ z${patchTiles.z} · ~${fmt(gridMpp(patch.grid))} ม./พิกเซล`;
+  el.textContent = t('detail.now', { z: patchTiles.z, m: fmtDist(gridMpp(patch.grid)) });
 }
 
 let lastCheck = 0;
@@ -838,30 +849,40 @@ function prefetchProvinceSoon(f) {
 }
 
 // ---------- world top-10 highest / deepest ----------
-let pois = [];        // [{ kind, rank, name, ..., pin, el, base }]
+// Each point is a rank badge on screen joined to its true ground position by a leader line;
+// badges are placed so they never overlap (nearest free slot around the point).
+let pois = [];        // [{ kind, rank, name, ..., el, up, base }]
 let poiNote = '';
+let poiNoteEn = '';
 let poiKind = 'high';
 let poiSelected = null;
+const SVG_NS = 'http://www.w3.org/2000/svg';
 
 async function loadWorldPois() {
   try {
     const json = await (await fetch(WORLD_EXTREMES_URL)).json();
     poiNote = json.note;
+    poiNoteEn = json.noteEn ?? json.note;
     pois = [...json.high.map((p) => ({ ...p, kind: 'high' })), ...json.deep.map((p) => ({ ...p, kind: 'deep' }))];
     for (const p of pois) {
-      p.pin = createPin(p.kind === 'high' ? 0xff6b57 : 0x9b7bff);
-      scene.add(p.pin.group);
       const el = document.createElement('button');
       el.type = 'button';
       el.className = `poi ${p.kind}`;
-      el.setAttribute('aria-label', `${p.kind === 'high' ? 'สูงที่สุด' : 'ลึกที่สุด'} อันดับ ${p.rank}: ${p.name} ${fmtH(p.h)}`);
-      el.innerHTML = `<b><span>${p.kind === 'high' ? '▲' : '▼'}${p.rank}</span></b><span class="t"></span>`;
-      el.querySelector('.t').textContent = p.name.split(' · ')[0];
-      el.querySelector('.t').insertAdjacentHTML('beforeend', `<small>${fmt(p.h)} ม.</small>`);
+      el.setAttribute('aria-label', t('poi.aria', { kind: t(p.kind === 'high' ? 'poi.highest' : 'poi.deepest'), n: p.rank, name: nm(p), h: fmtH(p.h) }));
+      el.innerHTML = `<b><i>${p.kind === 'high' ? '▲' : '▼'}</i><span>${p.rank}</span></b><span class="t"></span>`;
+      el.querySelector('.t').textContent = nm(p).split(EN ? ', ' : ' · ')[0];
+      el.querySelector('.t').insertAdjacentHTML('beforeend', `<small>${fmtM(p.h)}</small>`);
       el.addEventListener('click', () => selectPoi(p, { fly: true }));
       $('pois').appendChild(el);
       p.el = el;
       p.up = latLonToVec3(p.lat, p.lon);
+      p.line = document.createElementNS(SVG_NS, 'line');
+      p.dot = document.createElementNS(SVG_NS, 'circle');
+      p.dot.setAttribute('r', '3.5');
+      const color = p.kind === 'high' ? '#ff8a70' : '#b79cff';
+      p.line.setAttribute('stroke', color);
+      p.dot.setAttribute('fill', color);
+      $('poi-lines').append(p.line, p.dot);
     }
     renderPoiList();
     placePois();
@@ -870,52 +891,77 @@ async function loadWorldPois() {
   }
 }
 
-// Ground radius under each pin; refreshed when heights change (exaggeration, new detail).
+// Ground radius under each point; refreshed when heights change (exaggeration, new detail).
 function placePois() {
   const s = scale();
-  for (const p of pois) p.base = 1 + surfaceHeight(p.lat, p.lon) * s;
+  for (const p of pois) p.base = 1 + Math.max(0, surfaceHeight(p.lat, p.lon)) * s;
 }
 
+// Candidate badge offsets (px) from the anchor, nearest first: straight above, then
+// fanning out sideways and upward.
+const SLOTS = (() => {
+  const out = [];
+  for (let ring = 1; ring <= 6; ring++) {
+    for (let k = -ring; k <= ring; k++) out.push([k, -ring]);
+    out.push([-ring - 1, 0], [ring + 1, 0]);
+  }
+  return out.sort((a, b) => Math.hypot(a[0] * 1.2, a[1]) - Math.hypot(b[0] * 1.2, b[1]));
+})();
+
 const poiTop = new THREE.Vector3();
-const poiBase = new THREE.Vector3();
 function updatePois() {
   const show = state.worldPois && !view && pois.length;
   $('pois').hidden = !show;
-  for (const p of pois) p.pin.group.visible = !!show;
   if (!show) return;
-  const alt = camera.position.length() - 1;
-  // Stems scale with distance so pins stay readable from orbit and up close; deep pins
-  // rise from the trench floor to just above sea level.
-  const stem = THREE.MathUtils.clamp(alt * 0.08, 0.002, 0.06);
-  const near = alt < 0.35;
-  const placed = [];
+  const near = camera.position.length() - 1 < 0.35;
   for (const p of pois) {
-    poiBase.copy(p.up).multiplyScalar(p.base);
-    const topR = Math.max(p.base, 1) + stem;
-    p.pin.place(poiBase, p.up, topR - p.base);
-    p.pin.resize(camera);
-    poiTop.copy(p.up).multiplyScalar(topR);
+    poiTop.copy(p.up).multiplyScalar(p.base);
     toCam.copy(camera.position).sub(poiTop);
     projected.copy(poiTop).project(camera);
     p.onScreen = toCam.dot(p.up) > 0 && projected.z < 1 && Math.abs(projected.x) < 1.05 && Math.abs(projected.y) < 1.05;
     p.sx = (projected.x * 0.5 + 0.5) * innerWidth;
     p.sy = (-projected.y * 0.5 + 0.5) * innerHeight;
   }
-  // Declutter: the selected point first, then by rank (1s of both lists before 2s, …);
-  // a label that would overlap one already placed is hidden (its pin stays).
+  // The selected point first, then by rank (both #1s, then both #2s, …). Each badge takes the
+  // nearest slot that overlaps neither a placed badge nor another point's anchor dot.
   const order = pois.filter((p) => p.onScreen)
-    .sort((a, b) => (b === poiSelected) - (a === poiSelected) || a.rank - b.rank);
-  for (const p of pois) if (!p.onScreen) p.el.style.display = 'none';
+    .sort((a, b) => (b === poiSelected) - (a === poiSelected) || a.rank - b.rank || (a.kind > b.kind) - (a.kind < b.kind));
+  const placed = [];
+  const dots = order.map((p) => ({ l: p.sx - 5, r: p.sx + 5, t: p.sy - 5, b: p.sy + 5 }));
+  const overlaps = (box) => placed.some((q) => box.l < q.r && box.r > q.l && box.t < q.b && box.b > q.t) ||
+    dots.some((q) => box.l < q.r && box.r > q.l && box.t < q.b && box.b > q.t);
+  for (const p of pois) {
+    if (p.onScreen) continue;
+    p.el.style.display = 'none';
+    p.line.style.display = p.dot.style.display = 'none';
+  }
   for (const p of order) {
     const full = near || p === poiSelected;
     p.el.classList.toggle('compact', !full);
-    const w = full ? 170 : 34;
-    const box = { l: p.sx - w / 2, r: p.sx + w / 2, t: p.sy - 36, b: p.sy - 10 };
-    const hit = placed.some((q) => box.l < q.r && box.r > q.l && box.t < q.b && box.b > q.t);
-    p.el.style.display = hit ? 'none' : '';
-    if (hit) continue;
-    placed.push(box);
-    p.el.style.transform = `translate(${p.sx}px, ${p.sy}px) translate(-50%, calc(-100% - 10px))`;
+    p.el.style.display = '';
+    p.line.style.display = p.dot.style.display = '';
+    const w = p.el.offsetWidth || (full ? 170 : 30);
+    const h = 28;
+    let box = null;
+    for (const [dx, dy] of SLOTS) {
+      const cx = p.sx + dx * (w * 0.55 + 4);
+      const cy = p.sy - 14 + dy * (h + 6);
+      const cand = { l: cx - w / 2, r: cx + w / 2, t: cy - h / 2, b: cy + h / 2, cx, cy };
+      if (!overlaps(cand)) { box = cand; break; }
+    }
+    if (!box) { // crowded beyond every slot: keep only the dot
+      p.el.style.display = 'none';
+      p.line.style.display = 'none';
+    } else {
+      placed.push(box);
+      p.el.style.transform = `translate(${box.l}px, ${box.t}px)`;
+      p.line.setAttribute('x1', p.sx);
+      p.line.setAttribute('y1', p.sy);
+      p.line.setAttribute('x2', box.cx);
+      p.line.setAttribute('y2', box.b > p.sy ? box.t : box.b);
+    }
+    p.dot.setAttribute('cx', p.sx);
+    p.dot.setAttribute('cy', p.sy);
   }
 }
 
@@ -925,15 +971,36 @@ function selectPoi(p, { fly = false } = {}) {
   for (const q of pois) q.el.setAttribute('aria-pressed', String(q === p));
   const card = $('poi-card');
   card.hidden = false;
+  card.scrollTop = 0;
   card.classList.toggle('deep', p.kind === 'deep');
-  $('poi-rank').textContent = `${p.kind === 'high' ? '▲ สูงที่สุดในโลก' : '▼ ลึกที่สุดในโลก'} อันดับ ${p.rank}`;
-  $('poi-name').textContent = p.name;
-  $('poi-en').textContent = p.nameEn;
-  $('poi-h').textContent = p.kind === 'high' ? `${fmt(p.h)} ม.` : `${fmt(-p.h)} ม. ใต้ระดับทะเล`;
-  $('poi-where').textContent = [p.where, p.range].filter(Boolean).join(' · ');
+  $('poi-rank').textContent = t(p.kind === 'high' ? 'poi.rankHigh' : 'poi.rankDeep', { n: p.rank });
+  $('poi-name').textContent = nm(p);
+  $('poi-en').textContent = EN ? p.name : p.nameEn;
+  $('poi-h').textContent = p.kind === 'high' ? fmtM(p.h) : t('poi.belowSea', { h: fmtM(-p.h) });
+  $('poi-where').textContent = (EN ? [p.whereEn, p.rangeEn] : [p.where, p.range]).filter(Boolean).join(' · ');
   $('poi-at').textContent = `${Math.abs(p.lat).toFixed(3)}°${p.lat >= 0 ? 'N' : 'S'} ${Math.abs(p.lon).toFixed(3)}°${p.lon >= 0 ? 'E' : 'W'}`;
+  // Photo from Wikimedia Commons with its author and license.
+  const fig = $('poi-figure');
+  fig.hidden = !p.image;
+  if (p.image) {
+    $('poi-img').src = p.image.src;
+    $('poi-img').alt = p.nameEn;
+    const credit = $('poi-credit');
+    credit.innerHTML = '';
+    const a = document.createElement('a');
+    a.href = p.image.page;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = [p.image.artist, p.image.license].filter(Boolean).join(' · ') || 'Wikimedia Commons';
+    credit.append(`${t('poi.photo')}: `, a, ' / Wikimedia Commons');
+  }
+  $('poi-summary').textContent = (EN ? p.summaryEn : p.summaryTh ?? p.summaryEn) ?? '';
+  const article = $('poi-article');
+  const thArticle = !EN && p.articleTh;
+  article.href = thArticle || p.articleEn;
+  article.textContent = t(thArticle ? 'poi.readTh' : 'poi.readEn');
   updatePoiModel();
-  $('poi-note').textContent = p.kind === 'deep' || p.rank === 1 ? poiNote : '';
+  $('poi-note').textContent = EN ? poiNoteEn : poiNote;
   if (fly) flyTo({ lat: p.lat, lon: p.lon, dist: p.kind === 'high' ? 1.12 : 1.18 });
   for (const b of $('poi-list').children) b.setAttribute('aria-current', String(b.dataset.key === `${p.kind}${p.rank}`));
 }
@@ -945,7 +1012,7 @@ function updatePoiModel() {
   const grid = patch && contains(patch.grid, p.lat, p.lon) ? patch.grid : globe?.grid;
   if (!grid) return;
   const mpp = gridMpp(grid);
-  $('poi-model').textContent = `${fmtH(heightAt(grid, p.lat, p.lon))} (~${mpp >= 1000 ? `${fmt(mpp / 1000)} กม.` : `${fmt(mpp)} ม.`}/พิกเซล)`;
+  $('poi-model').textContent = `${fmtH(heightAt(grid, p.lat, p.lon))} (~${fmtDist(mpp)}/${EN ? 'pixel' : 'พิกเซล'})`;
 }
 
 function stepPoi(dir) {
@@ -965,14 +1032,20 @@ function renderPoiList() {
     btn.dataset.key = `${p.kind}${p.rank}`;
     btn.innerHTML = '<span><span class="rank"></span><span class="n"></span></span><small></small>';
     btn.querySelector('.rank').textContent = p.rank;
-    btn.querySelector('.n').textContent = p.name.split(' · ')[0];
-    btn.querySelector('small').textContent = `${fmt(p.h)} ม.`;
+    btn.querySelector('.n').textContent = nm(p).split(EN ? ', ' : ' · ')[0];
+    btn.querySelector('small').textContent = fmtM(p.h);
     btn.addEventListener('click', () => { drawers.close(); selectPoi(p, { fly: true }); });
     list.appendChild(btn);
   }
 }
 
 // ---------- UI ----------
+applyDom();
+document.title = t(THAI_MODE ? 'meta.title.thai' : 'meta.title.world');
+$('lang-btn').addEventListener('click', switchLanguage);
+// World / Thailand links stay in the current language.
+$('mode-world').href = pageUrl('world');
+$('mode-thai').href = pageUrl('thai');
 const drawers = initDrawers();
 const info = initPopover($('info-btn'), $('info'));
 $('credit').addEventListener('click', () => { if (!info.isOpen()) $('info-btn').click(); });
@@ -996,7 +1069,7 @@ for (const [id, r] of Object.entries(RAMPS)) {
   btn.type = 'button';
   btn.dataset.ramp = id;
   btn.setAttribute('aria-pressed', String(id === state.ramp));
-  btn.innerHTML = `<span style="background:${rampCss(r.stops, -6000, 6000, 'to left', 16)}"></span>${r.label}`;
+  btn.innerHTML = `<span style="background:${rampCss(r.stops, -6000, 6000, 'to left', 16)}"></span>${t(`ramp.${id}`)}`;
   btn.addEventListener('click', () => {
     state.ramp = id;
     setRamp(r.stops);
@@ -1062,20 +1135,21 @@ function renderPlaceList() {
   const q = $('place-filter').value.trim().toLowerCase();
   const list = $('place-list');
   list.innerHTML = '';
-  for (const [code, label] of Object.entries(REGIONS)) {
+  for (const code of REGION_CODES) {
     const fs = provinces.features.filter((f) => f.region === code &&
-      (!q || f.name.includes(q) || f.nameEn.toLowerCase().includes(q)));
+      (!q || f.name.includes(q) || f.nameEn.toLowerCase().includes(q)))
+      .sort((a, b) => nm(a).localeCompare(nm(b), EN ? 'en' : 'th'));
     if (!fs.length) continue;
     const h = document.createElement('h3');
-    h.textContent = label;
+    h.textContent = regionName(code);
     list.appendChild(h);
     for (const f of fs) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'row-btn';
       btn.innerHTML = '<span></span><small></small>';
-      btn.firstChild.textContent = f.name;
-      btn.lastChild.textContent = `${fmt(f.area)} ตร.กม.`;
+      btn.firstChild.textContent = nm(f);
+      btn.lastChild.textContent = `${fmt(f.area)} ${t('unit.km2')}`;
       if (view?.f === f) btn.setAttribute('aria-current', 'true');
       btn.addEventListener('click', () => enterProvince(f));
       list.appendChild(btn);
@@ -1098,12 +1172,15 @@ const search = createSearch($('search'), $('search-list'), (r) => {
 function updateSearchIndex() {
   if (!provinces) return;
   const items = [];
+  const bkkUnit = (f, [th, bkk]) => (isBkk(f) ? bkk : th);
   for (const f of provinces.features) {
-    items.push({ kind: 'province', label: provinceTitle(f), sub: `${f.nameEn} · ${REGIONS[f.region] ?? ''}`, keys: `${f.name} ${f.nameEn}`.toLowerCase(), f });
+    items.push({ kind: 'province', label: provinceTitle(f), sub: `${EN ? f.name : f.nameEn} · ${regionName(f.region)}`, keys: `${f.name} ${f.nameEn}`.toLowerCase(), f });
     for (const a of amphoesOf(f)) {
-      items.push({ kind: 'amphoe', label: `${isBkk(f) ? 'เขต' : 'อ.'}${a.name}`, sub: provinceTitle(f), keys: a.name.toLowerCase(), f, bbox: a.bbox, lines: a.tambons.flatMap((t) => t.lines) });
-      for (const t of a.tambons) {
-        items.push({ kind: 'tambon', label: `${isBkk(f) ? 'แขวง' : 'ต.'}${t.name}`, sub: `${isBkk(f) ? 'เขต' : 'อ.'}${a.name} ${provinceTitle(f)}`, keys: t.name.toLowerCase(), f, bbox: t.bbox, lines: t.lines });
+      const aLabel = EN ? `${a.nameEn} District` : `${bkkUnit(f, ['อ.', 'เขต'])}${a.name}`;
+      items.push({ kind: 'amphoe', label: aLabel, sub: provinceTitle(f), keys: `${a.name} ${a.nameEn ?? ''}`.toLowerCase(), f, bbox: a.bbox, lines: a.tambons.flatMap((tb) => tb.lines) });
+      for (const tb of a.tambons) {
+        const tLabel = EN ? (tb.nameEn ?? tb.name) : `${bkkUnit(f, ['ต.', 'แขวง'])}${tb.name}`;
+        items.push({ kind: 'tambon', label: tLabel, sub: `${aLabel}, ${provinceTitle(f)}`, keys: `${tb.name} ${tb.nameEn ?? ''}`.toLowerCase(), f, bbox: tb.bbox, lines: tb.lines });
       }
     }
   }
@@ -1214,12 +1291,17 @@ function tambonAt(province, lat, lon) {
 }
 
 // "ต.… อ.… จ.…" (Bangkok uses แขวง / เขต).
-function placeName(province, tambon) {
+function placeName(province, tambon, opts = {}) {
   if (!province) return '';
   const bkk = isBkk(province);
   const parts = [];
+  if (EN) {
+    if (tambon) parts.push(tambon.nameEn ?? tambon.name, ampName(tambon));
+    if (opts.province !== false) parts.push(nm(province));
+    return parts.join(', ');
+  }
   if (tambon) parts.push(`${bkk ? 'แขวง' : 'ต.'}${tambon.name}`, `${bkk ? 'เขต' : 'อ.'}${tambon.amp}`);
-  parts.push(provinceTitle(province));
+  if (opts.province !== false) parts.push(provinceTitle(province));
   return parts.join(' ');
 }
 
@@ -1230,7 +1312,7 @@ function showReadout(p) {
   legend.cursor(p ? p.h : null);
   mini.cursor(p ? p.h : null);
   if (!p) {
-    $('hud-place').textContent = 'ชี้ที่แผนที่เพื่อดูความสูง';
+    $('hud-place').textContent = t('hud.idle');
     $('hud-coord').textContent = '—';
     $('hud-h').textContent = '—';
     return;
@@ -1239,7 +1321,7 @@ function showReadout(p) {
   const ew = p.lon >= 0 ? 'E' : 'W';
   const coord = `${Math.abs(p.lat).toFixed(3)}°${ns} ${Math.abs(p.lon).toFixed(3)}°${ew}`;
   const below = state.water ? state.sea - p.h : -p.h;
-  const place = placeName(p.province, p.tambon) || (below > 0 ? 'ใต้ระดับน้ำทะเล' : '—');
+  const place = placeName(p.province, p.tambon) || (below > 0 ? t('hud.underwater') : '—');
   $('hud-place').textContent = place;
   $('hud-coord').textContent = coord;
   $('hud-h').textContent = fmtH(p.h);
@@ -1248,7 +1330,7 @@ function showReadout(p) {
   $('sheet-h').textContent = fmtH(p.h);
   tapped = p.province;
   $('sheet-3d').hidden = !tapped;
-  if (tapped) $('sheet-3d').textContent = `ดู 3D ${provinceTitle(tapped)}`;
+  if (tapped) $('sheet-3d').textContent = t('sheet.view3d', { p: provinceTitle(tapped) });
 }
 $('sheet-3d').addEventListener('click', () => tapped && enterProvince(tapped));
 

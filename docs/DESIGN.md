@@ -129,7 +129,13 @@
    ทุก surface ใช้ mask จากขอบเขตจังหวัดรวมกัน (canvas 4096 px เป็น texture R8) และ discard ทุกอย่างนอกประเทศไทย ทำให้ประเทศไทยลอยอยู่กลางอวกาศ
    ช่วงสูงสุด–ต่ำสุดคำนวณเฉพาะพื้นที่ในประเทศไทย ส่วนมุมมอง 3D รายจังหวัดและข้อมูลตำบลยังใช้ได้เหมือนเดิม
    ตอนพัฒนาใช้ `serve.py` จัด route `/thai` ส่วนบน GitHub Pages ใช้ workflow `.github/workflows/pages.yml` คัดลอก `index.html` ไปเป็น `thai/index.html` แล้วใส่ `<base href="../">`
-11. **Picking:** ยิง ray ไปตัดทรงกลม แล้ววนแก้ค่ารัศมีด้วยความสูงที่จุดนั้น 3 รอบ จึงได้พิกัดที่แม่นยำแม้ตั้งค่าขยายความสูงไว้มาก
+11. **10 อันดับของโลก:** อ่านจาก `data/world-extremes.json` ข้อมูลความสูงและความลึกตรวจสอบกับวิกิพีเดียแล้ว (เช่น Horizon Deep 10,823 ม., Izu–Ogasawara 9,826 ม., Japan Trench 8,046 ม.)
+   ภาพมาจาก Wikimedia Commons โดยระบุผู้ถ่ายและสัญญาอนุญาต ส่วนคำอธิบายย่อมาจากวิกิพีเดียไทย/อังกฤษ
+   หมุดเป็นป้ายแสดงอันดับ ซึ่งจะวางในช่องว่างที่ใกล้จุดจริงที่สุดโดยไม่ทับป้ายอื่นหรือจุดอื่น และมีเส้นนำโยงกลับไปยังตำแหน่งจริง
+12. **2 ภาษาและ SEO:** ข้อความทั้งหมดอยู่ใน `src/i18n.js` ภาษาดูจาก path (`/en/…`) ทำให้แต่ละภาษามี URL ของตัวเองสำหรับ search engine
+   `tools/build.py` สร้างหน้า `/`, `/thai/`, `/en/`, `/en/thai/` จาก `index.html` ไฟล์เดียว โดยใส่ `<base>`, `<html lang>` และ SEO block (title, description, canonical, hreflang, OG, Twitter, JSON-LD) ให้แต่ละหน้า
+   แล้วสร้าง `sitemap.xml` และ `robots.txt` ด้วย ส่วน `serve.py` ใช้ฟังก์ชันเดียวกันตอนพัฒนา
+13. **Picking:** ยิง ray ไปตัดทรงกลม แล้ววนแก้ค่ารัศมีด้วยความสูงที่จุดนั้น 3 รอบ จึงได้พิกัดที่แม่นยำแม้ตั้งค่าขยายความสูงไว้มาก
 
 ### 4.3 โครงสร้างโค้ด (ต้นแบบ)
 
@@ -139,6 +145,9 @@ src/elevation.js     โหลด tile, decode Terrarium, reproject, sample ค�
 src/globe.js         mesh + shader + ramp + overlays
 src/main.js          scene, camera, controls, data loading, province view, picking, fly-to
 src/ui.js            DOM ส่วน UI: drawers, legend, search, status chip, scale bar
+src/i18n.js          ข้อความไทย/อังกฤษ, ตรวจภาษาจาก path, URL ของแต่ละหน้า
+tools/build.py       สร้างหน้า + SEO + sitemap/robots สำหรับ deploy
+assets/              favicon, icons, og-image
 src/province.js      tile range, point-in-polygon, extremes + histogram, pins
 tools/precompute.*   สร้าง data/province-extremes.json
 ```

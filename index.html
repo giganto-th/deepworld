@@ -3,7 +3,39 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DeepWorld — ภูมิประเทศ 3 มิติ</title>
+  <!-- seo:start -->
+  <title>DeepWorld — แผนที่โลก 3 มิติ ความสูงของเปลือกโลกบนบกและใต้ทะเล</title>
+  <meta name="description" content="สำรวจลูกโลก 3 มิติที่แสดงความสูงของภูเขาและความลึกของก้นมหาสมุทร พร้อม 10 อันดับยอดเขาสูงที่สุดและจุดลึกที่สุดของโลก รอยต่อแผ่นเปลือกโลก และแผนที่ภูมิประเทศประเทศไทยรายจังหวัด อำเภอ ตำบล" />
+  <link rel="canonical" href="https://giganto-th.github.io/deepworld/" />
+  <link rel="alternate" hreflang="th" href="https://giganto-th.github.io/deepworld/" />
+  <link rel="alternate" hreflang="en" href="https://giganto-th.github.io/deepworld/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://giganto-th.github.io/deepworld/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="DeepWorld" />
+  <meta property="og:title" content="DeepWorld — แผนที่โลก 3 มิติ ความสูงของเปลือกโลกบนบกและใต้ทะเล" />
+  <meta property="og:description" content="สำรวจลูกโลก 3 มิติที่แสดงความสูงของภูเขาและความลึกของก้นมหาสมุทร พร้อม 10 อันดับยอดเขาสูงที่สุดและจุดลึกที่สุดของโลก รอยต่อแผ่นเปลือกโลก และแผนที่ภูมิประเทศประเทศไทยรายจังหวัด อำเภอ ตำบล" />
+  <meta property="og:url" content="https://giganto-th.github.io/deepworld/" />
+  <meta property="og:locale" content="th_TH" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:image" content="https://giganto-th.github.io/deepworld/assets/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="DeepWorld — แผนที่โลก 3 มิติ ความสูงของเปลือกโลกบนบกและใต้ทะเล" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="DeepWorld — แผนที่โลก 3 มิติ ความสูงของเปลือกโลกบนบกและใต้ทะเล" />
+  <meta name="twitter:description" content="สำรวจลูกโลก 3 มิติที่แสดงความสูงของภูเขาและความลึกของก้นมหาสมุทร พร้อม 10 อันดับยอดเขาสูงที่สุดและจุดลึกที่สุดของโลก รอยต่อแผ่นเปลือกโลก และแผนที่ภูมิประเทศประเทศไทยรายจังหวัด อำเภอ ตำบล" />
+  <meta name="twitter:image" content="https://giganto-th.github.io/deepworld/assets/og-image.jpg" />
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "DeepWorld", "url": "https://giganto-th.github.io/deepworld/", "description": "สำรวจลูกโลก 3 มิติที่แสดงความสูงของภูเขาและความลึกของก้นมหาสมุทร พร้อม 10 อันดับยอดเขาสูงที่สุดและจุดลึกที่สุดของโลก รอยต่อแผ่นเปลือกโลก และแผนที่ภูมิประเทศประเทศไทยรายจังหวัด อำเภอ ตำบล", "inLanguage": "th", "applicationCategory": "EducationalApplication", "operatingSystem": "Any (WebGL browser)", "image": "https://giganto-th.github.io/deepworld/assets/og-image.jpg", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "THB"}, "about": ["Topography", "Bathymetry", "Thailand", "Mount Everest", "Mariana Trench"]}</script>
+  <!-- seo:end -->
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="author" content="DeepWorld" />
+  <meta name="theme-color" content="#05070d" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="assets/favicon.ico" sizes="48x48" />
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
   <script type="importmap">
@@ -61,6 +93,7 @@
       background: var(--glass); border: 1px solid var(--line);
     }
     .icon-btn:hover { border-color: var(--line-strong); }
+    .lang-btn { width: auto; padding: 0 12px; font-size: 13px; font-weight: 500; }
     .ghost-btn {
       height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line-strong);
       background: transparent;
@@ -282,22 +315,26 @@
 
     /* ---------- world top-10 ---------- */
     #pois { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 2; }
+    #poi-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    #poi-lines line { stroke-width: 1.5; }
+    #poi-lines circle { stroke: #0b0f19; stroke-width: 1.5; }
     .poi {
       position: absolute; left: 0; top: 0; pointer-events: auto; white-space: nowrap;
-      display: flex; align-items: center; gap: 6px; padding: 3px 9px 3px 3px; border-radius: 999px;
-      background: rgba(12, 17, 29, 0.88); border: 1px solid currentColor; font-size: 12px; color: var(--hi);
+      display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 2px; border-radius: 999px;
+      background: rgba(12, 17, 29, 0.92); border: 1.5px solid currentColor; font-size: 12px; color: var(--hi);
     }
     .poi.deep { color: #b79cff; }
     .poi b {
-      display: grid; place-items: center; min-width: 20px; height: 20px; border-radius: 999px; padding: 0 5px;
-      background: currentColor; font: 500 11px/1 var(--mono);
+      display: flex; align-items: center; justify-content: center; gap: 1px; min-width: 24px; height: 24px; border-radius: 999px; padding: 0 4px;
+      background: currentColor; font: 600 12px/1 var(--mono);
     }
     .poi b span { color: #0b0f19; }
+    .poi b i { font-style: normal; font-size: 8px; color: #0b0f19; opacity: 0.75; }
     .poi .t { color: var(--text); }
     .poi .t small { margin-left: 4px; font-family: var(--mono); color: var(--soft); }
-    .poi.compact { padding-right: 3px; }
+    .poi.compact { padding: 0 2px; }
     .poi.compact .t { display: none; }
-    .poi[aria-pressed="true"] { box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.55); }
+    .poi[aria-pressed="true"] { box-shadow: 0 0 0 3px rgba(255, 209, 102, 0.6); z-index: 1; }
     .poi-card {
       position: fixed; left: 96px; bottom: 76px; z-index: 4; width: 320px; max-height: calc(100% - 170px); overflow: auto;
       padding: 16px; border-radius: 16px; display: flex; flex-direction: column; gap: 6px;
@@ -312,6 +349,17 @@
     .poi-card dl { margin: 4px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: 12.5px; }
     .poi-card dt { color: var(--muted); }
     .poi-card dd { margin: 0; }
+    .poi-figure { margin: 0 0 4px; border-radius: 12px; overflow: hidden; background: #0d1526; }
+    .poi-figure img { display: block; width: 100%; height: 170px; object-fit: cover; }
+    .poi-figure figcaption { padding: 4px 8px; font-size: 10.5px; color: var(--muted); }
+    .poi-figure figcaption a { color: var(--muted); }
+    .poi-summary {
+      margin: 4px 0 0; font-size: 12.5px; line-height: 1.55; color: var(--soft);
+      display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .poi-notes summary { cursor: pointer; font-size: 12px; color: var(--muted); }
+    .poi-notes p { margin-top: 4px; }
+    .poi-article { font-size: 12px; color: #9fd8ff; }
     .poi-actions { display: flex; gap: 6px; margin-top: 6px; }
     .poi-actions #poi-go { flex: 1; }
     .poi-actions button { min-width: 40px; }
@@ -366,10 +414,16 @@
   </style>
 </head>
 <body>
+  <!-- Text for search engines and screen readers; the map itself is drawn with WebGL. -->
+  <h1 class="sr-only" data-i18n="seo.h1">DeepWorld แผนที่ภูมิประเทศ 3 มิติของโลกและประเทศไทย</h1>
+  <p class="sr-only" data-i18n="seo.desc">ลูกโลก 3 มิติแสดงความสูงของภูเขาและความลึกของมหาสมุทร 10 อันดับยอดเขาสูงที่สุดและจุดลึกที่สุดของโลก และแผนที่ภูมิประเทศประเทศไทยทั้ง 77 จังหวัด พร้อมจุดสูงสุดและต่ำสุดของแต่ละจังหวัด</p>
+  <noscript>
+    <p style="padding:24px;max-width:640px">DeepWorld ต้องใช้ JavaScript และเบราว์เซอร์ที่รองรับ WebGL · DeepWorld needs JavaScript and a WebGL-capable browser.</p>
+  </noscript>
   <div id="app"></div>
   <div id="labels" hidden></div>
   <div id="pins"></div>
-  <div id="pois" data-world-only></div>
+  <div id="pois" data-world-only><svg id="poi-lines" aria-hidden="true"></svg></div>
 
   <!-- Top bar -->
   <header class="topbar">
@@ -377,12 +431,12 @@
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#7dd3fc" stroke-width="1.6" aria-hidden="true"><circle cx="13" cy="13" r="11" /><path d="M4 15c3-3 5-1 8-4s5-3 10 0" /><path d="M5 19c3-2 6-1 9-3s5-1 7 0" /></svg>
       <b>DeepWorld</b>
     </div>
-    <nav class="segmented glass" aria-label="โหมดแผนที่" data-globe-only>
-      <a href="./" id="mode-world">ทั้งโลก</a>
-      <a href="./thai/" id="mode-thai">ประเทศไทย</a>
+    <nav class="segmented glass" aria-label="โหมดแผนที่" data-i18n-attr="aria-label:mode.label" data-globe-only>
+      <a href="./" id="mode-world" data-i18n="mode.world">ทั้งโลก</a>
+      <a href="./thai/" id="mode-thai" data-i18n="mode.thai">ประเทศไทย</a>
     </nav>
-    <nav class="crumbs glass" aria-label="ตำแหน่ง" data-province-only>
-      <button type="button" id="crumb-home">ประเทศไทย</button>
+    <nav class="crumbs glass" aria-label="ตำแหน่ง" data-i18n-attr="aria-label:crumbs.label" data-province-only>
+      <button type="button" id="crumb-home" data-i18n="crumbs.home">ประเทศไทย</button>
       <span class="sep" aria-hidden="true">›</span>
       <span id="crumb-region"></span>
       <span class="sep" aria-hidden="true">›</span>
@@ -391,12 +445,12 @@
     <div class="search">
       <label class="glass">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-        <span class="sr-only">ค้นหาสถานที่</span>
-        <input id="search" type="search" autocomplete="off" placeholder="ค้นหาจังหวัด อำเภอ ตำบล หรือพิกัด"
+        <span class="sr-only" data-i18n="search.label">ค้นหาสถานที่</span>
+        <input id="search" data-i18n-attr="placeholder:search.placeholder" type="search" autocomplete="off" placeholder="ค้นหาจังหวัด อำเภอ ตำบล หรือพิกัด"
           role="combobox" aria-controls="search-list" aria-expanded="false" aria-autocomplete="list" />
         <kbd>/</kbd>
       </label>
-      <ul id="search-list" role="listbox" aria-label="ผลการค้นหา" hidden></ul>
+      <ul id="search-list" role="listbox" aria-label="ผลการค้นหา" data-i18n-attr="aria-label:search.results" hidden></ul>
     </div>
     <div class="spacer"></div>
     <div id="status" class="status glass" role="status" hidden>
@@ -404,139 +458,141 @@
       <span id="status-text"></span>
       <span id="status-bar"><span></span></span>
     </div>
-    <button type="button" class="icon-btn" id="back" data-province-only aria-label="กลับสู่ภาพรวม (Esc)" title="กลับ (Esc)">
+    <button type="button" class="icon-btn" id="back" data-province-only aria-label="กลับสู่ภาพรวม (Esc)" title="กลับ (Esc)" data-i18n-attr="aria-label:back;title:back">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9d3e6" stroke-width="2" aria-hidden="true"><path d="M15 18 9 12l6-6" /></svg>
     </button>
-    <button type="button" class="icon-btn" id="info-btn" aria-label="เกี่ยวกับข้อมูลและแหล่งที่มา" aria-expanded="false" aria-controls="info">
+    <button type="button" class="icon-btn lang-btn" id="lang-btn" data-i18n="lang.switch" data-i18n-attr="aria-label:lang.label">English</button>
+    <button type="button" class="icon-btn" id="info-btn" aria-label="เกี่ยวกับข้อมูลและแหล่งที่มา" data-i18n-attr="aria-label:info.open" aria-expanded="false" aria-controls="info">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9d3e6" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7.5v.5" /></svg>
     </button>
   </header>
 
-  <section id="info" aria-label="เกี่ยวกับข้อมูล" hidden>
+  <section id="info" aria-label="เกี่ยวกับข้อมูล" data-i18n-attr="aria-label:info.title" hidden>
     <div class="drawer-head">
-      <h2>เกี่ยวกับข้อมูล</h2>
-      <button type="button" class="drawer-close" aria-label="ปิด"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+      <h2 data-i18n="info.title">เกี่ยวกับข้อมูล</h2>
+      <button type="button" class="drawer-close" aria-label="ปิด" data-i18n-attr="aria-label:close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
     </div>
     <ul>
-      <li>ความสูง: <a href="https://registry.opendata.aws/terrain-tiles" target="_blank" rel="noopener">AWS Terrain Tiles</a> (SRTM, GMTED, ETOPO1)</li>
-      <li>เขตการปกครอง: <a href="https://github.com/chingchai/OpenGISData-Thailand" target="_blank" rel="noopener">OpenGISData-Thailand</a> (CC BY 4.0, กรมการปกครอง)</li>
-      <li data-world-only>รอยต่อแผ่นเปลือกโลก: <a href="https://github.com/fraxen/tectonicplates" target="_blank" rel="noopener">PB2002, Bird 2003</a></li>
+      <li><span data-i18n="info.elevation">ความสูง</span>: <a href="https://registry.opendata.aws/terrain-tiles" target="_blank" rel="noopener">AWS Terrain Tiles</a> (SRTM, GMTED, ETOPO1)</li>
+      <li><span data-i18n="info.admin">เขตการปกครอง</span>: <a href="https://github.com/chingchai/OpenGISData-Thailand" target="_blank" rel="noopener">OpenGISData-Thailand</a> <span data-i18n="info.adminNote">(CC BY 4.0, กรมการปกครอง)</span></li>
+      <li><span data-i18n="info.peaks">ชื่อยอดเขา</span>: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors (ODbL) · <span data-i18n="info.wiki">ภาพและคำอธิบาย 10 อันดับ</span>: <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a> / Wikipedia (CC BY-SA)</li>
+      <li data-world-only><span data-i18n="info.plates">รอยต่อแผ่นเปลือกโลก</span>: <a href="https://github.com/fraxen/tectonicplates" target="_blank" rel="noopener">PB2002, Bird 2003</a></li>
     </ul>
     <p id="stats"></p>
-    <p>ลากเพื่อหมุน · ล้อเมาส์เพื่อซูม · คลิกจังหวัดเพื่อดูแบบ 3D · <kbd>/</kbd> ค้นหา · <kbd>Esc</kbd> กลับ</p>
+    <p data-i18n-html="info.help">ลากเพื่อหมุน · ล้อเมาส์เพื่อซูม · คลิกจังหวัดเพื่อดูแบบ 3D · <kbd>/</kbd> ค้นหา · <kbd>Esc</kbd> กลับ</p>
   </section>
 
   <!-- Left rail -->
-  <nav class="rail glass" aria-label="เครื่องมือ">
+  <nav class="rail glass" aria-label="เครื่องมือ" data-i18n-attr="aria-label:rail.label">
     <button type="button" data-drawer="d-terrain" aria-pressed="false">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><path d="m3 17 5-7 4 5 3-4 6 6" /><path d="M3 21h18" /></svg>
-      ภูมิประเทศ
+      <span data-i18n="rail.terrain">ภูมิประเทศ</span>
     </button>
     <button type="button" data-drawer="d-layers" aria-pressed="false">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 13 9 5 9-5" /></svg>
-      ชั้นข้อมูล
+      <span data-i18n="rail.layers">ชั้นข้อมูล</span>
     </button>
     <button type="button" data-drawer="d-places" aria-pressed="false">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12Z" /><circle cx="12" cy="9" r="2.5" /></svg>
-      สถานที่
+      <span data-i18n="rail.places">สถานที่</span>
     </button>
   </nav>
 
-  <section class="drawer glass" id="d-terrain" aria-label="ภูมิประเทศ" hidden>
+  <section class="drawer glass" id="d-terrain" aria-label="ภูมิประเทศ" data-i18n-attr="aria-label:rail.terrain" hidden>
     <div class="drawer-head">
-      <h2>ภูมิประเทศ</h2>
-      <button type="button" class="drawer-close" aria-label="ปิดแผง"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+      <h2 data-i18n="rail.terrain">ภูมิประเทศ</h2>
+      <button type="button" class="drawer-close" aria-label="ปิดแผง" data-i18n-attr="aria-label:closePanel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
     </div>
     <label class="field">
-      <span class="field-label">ขยายความสูง <output data-out="exaggeration"></output></span>
+      <span class="field-label"><span data-i18n="terrain.exag">ขยายความสูง</span> <output data-out="exaggeration"></output></span>
       <input type="range" min="1" max="100" step="1" data-bind="exaggeration" />
     </label>
     <label class="field">
-      <span class="field-label">ความเข้มของเงา <output data-out="relief"></output></span>
+      <span class="field-label"><span data-i18n="terrain.relief">ความเข้มของเงา</span> <output data-out="relief"></output></span>
       <input type="range" min="0" max="30" step="1" data-bind="relief" />
     </label>
     <div class="field">
-      <span class="field-label">ชุดสี</span>
+      <span class="field-label" data-i18n="terrain.ramp">ชุดสี</span>
       <div class="ramps" id="ramps"></div>
     </div>
     <div class="group">
-      <label class="check">จำลองระดับน้ำทะเล <input type="checkbox" data-bind="water" /></label>
+      <label class="check"><span data-i18n="terrain.water">จำลองระดับน้ำทะเล</span> <input type="checkbox" data-bind="water" /></label>
       <label class="field">
-        <span class="field-label">ระดับน้ำ <output data-out="sea"></output></span>
+        <span class="field-label"><span data-i18n="terrain.sea">ระดับน้ำ</span> <output data-out="sea"></output></span>
         <input type="range" min="-6000" max="3000" step="10" data-bind="sea" id="sea" />
       </label>
     </div>
     <p class="hint" id="detail"></p>
   </section>
 
-  <section class="drawer glass" id="d-layers" aria-label="ชั้นข้อมูล" hidden>
+  <section class="drawer glass" id="d-layers" aria-label="ชั้นข้อมูล" data-i18n-attr="aria-label:rail.layers" hidden>
     <div class="drawer-head">
-      <h2>ชั้นข้อมูล</h2>
-      <button type="button" class="drawer-close" aria-label="ปิดแผง"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+      <h2 data-i18n="rail.layers">ชั้นข้อมูล</h2>
+      <button type="button" class="drawer-close" aria-label="ปิดแผง" data-i18n-attr="aria-label:closePanel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
     </div>
     <div class="field">
-      <label class="check"><span><span class="swatch" style="background:#fff"></span>เขตจังหวัด</span><input type="checkbox" data-bind="provinces" /></label>
-      <label class="check"><span><span class="swatch" style="background:rgba(255,255,255,0.45)"></span>เขตตำบล (มุมมองจังหวัด)</span><input type="checkbox" data-bind="tambonLines" /></label>
-      <label class="check">ชื่อจังหวัด <input type="checkbox" data-bind="labels" /></label>
-      <label class="check">หมุดสูงสุด–ต่ำสุด <input type="checkbox" data-bind="pins" /></label>
-      <label class="check" data-world-only><span><span class="swatch" style="background:#ff5a36"></span>รอยต่อแผ่นเปลือกโลก</span><input type="checkbox" data-bind="plates" id="plates" /></label>
-      <label class="check" data-world-only><span><span class="swatch" style="background:linear-gradient(90deg,#ff8a70 50%,#b79cff 50%)"></span>10 อันดับสูงสุด/ลึกสุดของโลก</span><input type="checkbox" data-bind="worldPois" /></label>
+      <label class="check"><span><span class="swatch" style="background:#fff"></span><span data-i18n="layers.provinces">เขตจังหวัด</span></span><input type="checkbox" data-bind="provinces" /></label>
+      <label class="check"><span><span class="swatch" style="background:rgba(255,255,255,0.45)"></span><span data-i18n="layers.tambons">เขตตำบล (มุมมองจังหวัด)</span></span><input type="checkbox" data-bind="tambonLines" /></label>
+      <label class="check"><span data-i18n="layers.labels">ชื่อจังหวัด</span> <input type="checkbox" data-bind="labels" /></label>
+      <label class="check"><span data-i18n="layers.pins">หมุดสูงสุด–ต่ำสุด</span> <input type="checkbox" data-bind="pins" /></label>
+      <label class="check" data-world-only><span><span class="swatch" style="background:#ff5a36"></span><span data-i18n="layers.plates">รอยต่อแผ่นเปลือกโลก</span></span><input type="checkbox" data-bind="plates" id="plates" /></label>
+      <label class="check" data-world-only><span><span class="swatch" style="background:linear-gradient(90deg,#ff8a70 50%,#b79cff 50%)"></span><span data-i18n="layers.worldPois">10 อันดับสูงสุด/ลึกสุดของโลก</span></span><input type="checkbox" data-bind="worldPois" /></label>
     </div>
     <label class="field group" data-world-only>
-      <span class="field-label">ความละเอียดภาพรวม</span>
+      <span class="field-label" data-i18n="layers.quality">ความละเอียดภาพรวม</span>
       <select data-bind="quality">
-        <option value="low">ต่ำ (~40 กม./พิกเซล)</option>
-        <option value="medium">กลาง (~20 กม./พิกเซล)</option>
-        <option value="high">สูง (~10 กม./พิกเซล)</option>
+        <option value="low" data-i18n="quality.low">ต่ำ (~40 กม./พิกเซล)</option>
+        <option value="medium" data-i18n="quality.medium">กลาง (~20 กม./พิกเซล)</option>
+        <option value="high" data-i18n="quality.high">สูง (~10 กม./พิกเซล)</option>
       </select>
     </label>
   </section>
 
-  <section class="drawer glass" id="d-places" aria-label="สถานที่" hidden>
+  <section class="drawer glass" id="d-places" aria-label="สถานที่" data-i18n-attr="aria-label:rail.places" hidden>
     <div class="drawer-head">
-      <h2>สถานที่</h2>
-      <button type="button" class="drawer-close" aria-label="ปิดแผง"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+      <h2 data-i18n="rail.places">สถานที่</h2>
+      <button type="button" class="drawer-close" aria-label="ปิดแผง" data-i18n-attr="aria-label:closePanel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
     </div>
     <div class="presets" data-world-only>
-      <button type="button" data-place="thailand">ประเทศไทย</button>
-      <button type="button" data-place="everest">ยอดเอเวอเรสต์</button>
-      <button type="button" data-place="mariana">ร่องลึกมาเรียนา</button>
-      <button type="button" data-place="atlantic">สันเขากลางแอตแลนติก</button>
-      <button type="button" data-place="andes">เทือกเขาแอนดีส</button>
-      <button type="button" data-place="himalaya">ที่ราบสูงทิเบต</button>
+      <button type="button" data-place="thailand" data-i18n="places.thailand">ประเทศไทย</button>
+      <button type="button" data-place="everest" data-i18n="places.everest">ยอดเอเวอเรสต์</button>
+      <button type="button" data-place="mariana" data-i18n="places.mariana">ร่องลึกมาเรียนา</button>
+      <button type="button" data-place="atlantic" data-i18n="places.atlantic">สันเขากลางแอตแลนติก</button>
+      <button type="button" data-place="andes" data-i18n="places.andes">เทือกเขาแอนดีส</button>
+      <button type="button" data-place="himalaya" data-i18n="places.himalaya">ที่ราบสูงทิเบต</button>
     </div>
-    <section class="field" data-world-only aria-label="10 อันดับของโลก">
-      <span class="field-label">10 อันดับของโลก</span>
-      <div class="toggle2" role="group" aria-label="ประเภท">
-        <button type="button" data-poi-kind="high" aria-pressed="true">สูงที่สุด</button>
-        <button type="button" data-poi-kind="deep" aria-pressed="false">ลึกที่สุด</button>
+    <section class="field" data-world-only aria-label="10 อันดับของโลก" data-i18n-attr="aria-label:places.top10">
+      <span class="field-label" data-i18n="places.top10">10 อันดับของโลก</span>
+      <div class="toggle2" role="group" aria-label="ประเภท" data-i18n-attr="aria-label:places.kind">
+        <button type="button" data-poi-kind="high" aria-pressed="true" data-i18n="places.highest">สูงที่สุด</button>
+        <button type="button" data-poi-kind="deep" aria-pressed="false" data-i18n="places.deepest">ลึกที่สุด</button>
       </div>
       <div class="place-list" id="poi-list"></div>
     </section>
     <label class="field">
-      <span class="field-label">จังหวัด (77)</span>
-      <input class="filter" id="place-filter" type="search" placeholder="กรองชื่อจังหวัด" autocomplete="off" />
+      <span class="field-label" data-i18n="places.provinces">จังหวัด (77)</span>
+      <input class="filter" id="place-filter" type="search" placeholder="กรองชื่อจังหวัด" data-i18n-attr="placeholder:places.filter" autocomplete="off" />
     </label>
     <div class="place-list" id="place-list"></div>
   </section>
 
   <!-- Elevation legend -->
-  <aside class="legend glass" aria-label="สเกลความสูง">
-    <div class="cap">ความสูง (ม.)</div>
+  <aside class="legend glass" aria-label="สเกลความสูง" data-i18n-attr="aria-label:legend.label">
+    <div class="cap" data-i18n="legend.cap">ความสูง (ม.)</div>
     <div class="legend-body">
       <div id="legend-bar"></div>
       <div id="legend-ticks"></div>
       <div id="legend-mark" hidden></div>
     </div>
-    <div class="toggle2" role="group" aria-label="ช่วงของสเกล">
-      <button type="button" data-range="local" aria-pressed="true">พื้นที่นี้</button>
-      <button type="button" data-range="world" aria-pressed="false">ทั้งโลก</button>
+    <div class="toggle2" role="group" aria-label="ช่วงของสเกล" data-i18n-attr="aria-label:legend.range">
+      <button type="button" data-range="local" aria-pressed="true" data-i18n="legend.local">พื้นที่นี้</button>
+      <button type="button" data-range="world" aria-pressed="false" data-i18n="legend.world">ทั้งโลก</button>
     </div>
   </aside>
 
   <!-- Cursor HUD -->
   <div class="hud glass idle" id="hud">
-    <span id="hud-place">ชี้ที่แผนที่เพื่อดูความสูง</span>
+    <span id="hud-place" data-i18n="hud.idle">ชี้ที่แผนที่เพื่อดูความสูง</span>
     <span class="sep" aria-hidden="true"></span>
     <span id="hud-coord">—</span>
     <span class="sep" aria-hidden="true"></span>
@@ -545,100 +601,109 @@
 
   <div class="corner-left">
     <div id="scalebar" hidden><span id="scalebar-line"></span><span id="scalebar-text"></span></div>
-    <button type="button" class="credit" id="credit">ข้อมูล: AWS Terrain Tiles · กรมการปกครอง (CC BY 4.0)</button>
+    <button type="button" class="credit" id="credit" data-i18n="credit">ข้อมูล: AWS Terrain Tiles · กรมการปกครอง (CC BY 4.0)</button>
   </div>
 
   <!-- Camera -->
-  <div class="cambar glass" role="group" aria-label="ควบคุมกล้อง" data-province-only>
-    <label><span>มุมกล้อง</span><input type="range" id="tilt" min="10" max="89" step="1" /><output id="tilt-val"></output></label>
-    <button type="button" class="icon-btn" id="orbit" aria-pressed="false" aria-label="หมุนรอบจังหวัดอัตโนมัติ">
+  <div class="cambar glass" role="group" aria-label="ควบคุมกล้อง" data-i18n-attr="aria-label:cam.label" data-province-only>
+    <label><span data-i18n="cam.tilt">มุมกล้อง</span><input type="range" id="tilt" min="10" max="89" step="1" /><output id="tilt-val"></output></label>
+    <button type="button" class="icon-btn" id="orbit" aria-pressed="false" aria-label="หมุนรอบจังหวัดอัตโนมัติ" data-i18n-attr="aria-label:cam.orbit">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9d3e6" stroke-width="1.8" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7" /><path d="M20 4v5h-5" /></svg>
     </button>
-    <button type="button" class="ghost-btn" id="topview">มุมบน</button>
+    <button type="button" class="ghost-btn" id="topview" data-i18n="cam.top">มุมบน</button>
   </div>
   <div class="camstack">
-    <button type="button" class="icon-btn" id="north" aria-label="หันทิศเหนือขึ้น">
+    <button type="button" class="icon-btn" id="north" aria-label="หันทิศเหนือขึ้น" data-i18n-attr="aria-label:cam.north">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 15 12H9Z" fill="#ff8a70" /><path d="M12 21 9 12h6Z" fill="#9aa6bd" /></svg>
     </button>
     <div class="zoom glass">
-      <button type="button" id="zoom-in" aria-label="ซูมเข้า">+</button>
+      <button type="button" id="zoom-in" aria-label="ซูมเข้า" data-i18n-attr="aria-label:cam.zoomIn">+</button>
       <hr />
-      <button type="button" id="zoom-out" aria-label="ซูมออก">−</button>
+      <button type="button" id="zoom-out" aria-label="ซูมออก" data-i18n-attr="aria-label:cam.zoomOut">−</button>
     </div>
   </div>
 
   <!-- World top-10 detail card -->
-  <section class="poi-card glass" id="poi-card" aria-label="รายละเอียดจุด" hidden>
+  <section class="poi-card glass" id="poi-card" aria-label="รายละเอียดจุด" data-i18n-attr="aria-label:poi.card" hidden>
     <div class="drawer-head">
       <span class="poi-rank" id="poi-rank"></span>
-      <button type="button" class="drawer-close" id="poi-close" aria-label="ปิด"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+      <button type="button" class="drawer-close" id="poi-close" aria-label="ปิด" data-i18n-attr="aria-label:close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
     </div>
+    <figure class="poi-figure" id="poi-figure" hidden>
+      <img id="poi-img" alt="" />
+      <figcaption id="poi-credit"></figcaption>
+    </figure>
     <h2 id="poi-name"></h2>
     <div class="poi-en" id="poi-en"></div>
     <div class="poi-h" id="poi-h"></div>
     <dl>
-      <dt>ที่ตั้ง</dt><dd id="poi-where"></dd>
-      <dt>พิกัด</dt><dd id="poi-at" class="mono"></dd>
-      <dt>ในแบบจำลองตอนนี้</dt><dd id="poi-model" class="mono"></dd>
+      <dt data-i18n="poi.where">ที่ตั้ง</dt><dd id="poi-where"></dd>
+      <dt data-i18n="poi.coords">พิกัด</dt><dd id="poi-at" class="mono"></dd>
+      <dt data-i18n="poi.model">ในแบบจำลองตอนนี้</dt><dd id="poi-model" class="mono"></dd>
     </dl>
-    <p class="hint" id="poi-note"></p>
+    <p class="poi-summary" id="poi-summary"></p>
+    <a class="poi-article" id="poi-article" target="_blank" rel="noopener"></a>
+    <details class="poi-notes">
+      <summary data-i18n="poi.noteTitle">หมายเหตุเรื่องข้อมูล</summary>
+      <p class="hint" id="poi-note"></p>
+    </details>
     <div class="poi-actions">
-      <button type="button" class="ghost-btn" id="poi-go">บินไปที่จุดนี้</button>
-      <button type="button" class="ghost-btn" id="poi-prev" aria-label="อันดับก่อนหน้า">‹</button>
-      <button type="button" class="ghost-btn" id="poi-next" aria-label="อันดับถัดไป">›</button>
+      <button type="button" class="ghost-btn" id="poi-go" data-i18n="poi.go">บินไปที่จุดนี้</button>
+      <button type="button" class="ghost-btn" id="poi-prev" aria-label="อันดับก่อนหน้า" data-i18n-attr="aria-label:poi.prev">‹</button>
+      <button type="button" class="ghost-btn" id="poi-next" aria-label="อันดับถัดไป" data-i18n-attr="aria-label:poi.next">›</button>
     </div>
   </section>
 
   <!-- Province inspector -->
-  <aside class="inspector glass" id="inspector" aria-label="ข้อมูลจังหวัด" data-province-only>
+  <aside class="inspector glass" id="inspector" aria-label="ข้อมูลจังหวัด" data-i18n-attr="aria-label:pi.label" data-province-only>
     <div>
       <h1 id="pi-name"></h1>
       <div id="pi-sub"></div>
     </div>
     <div class="extremes">
       <div class="xcard hi">
-        <span class="k">▲ จุดสูงสุด</span>
+        <span class="k" data-i18n="pi.max">▲ จุดสูงสุด</span>
         <span class="v" id="pi-max">—</span>
         <span class="n" id="pi-max-name"></span>
         <span class="c" id="pi-max-at"></span>
-        <button type="button" id="pi-max-go">บินไปที่จุดนี้</button>
+        <button type="button" id="pi-max-go" data-i18n="pi.go">บินไปที่จุดนี้</button>
       </div>
       <div class="xcard lo">
-        <span class="k">▼ จุดต่ำสุด (บนบก)</span>
+        <span class="k" data-i18n="pi.min">▼ จุดต่ำสุด (บนบก)</span>
         <span class="v" id="pi-min">—</span>
         <span class="n" id="pi-min-name"></span>
         <span class="c" id="pi-min-at"></span>
-        <button type="button" id="pi-min-go">บินไปที่จุดนี้</button>
+        <button type="button" id="pi-min-go" data-i18n="pi.go">บินไปที่จุดนี้</button>
       </div>
     </div>
-    <p class="hint" id="pi-x-note" hidden>พื้นที่ราบ: ค่าสูงสุดอาจมาจากอาคารหรือแนวต้นไม้ เพราะข้อมูล SRTM วัดความสูงของพื้นผิว ไม่ใช่ระดับดิน</p>
-    <section aria-label="การกระจายความสูง" class="field">
-      <span class="field-label">การกระจายความสูง <span class="hint" id="pi-hist-note"></span></span>
+    <p class="hint" id="pi-x-note" data-i18n="pi.flatNote" hidden>พื้นที่ราบ: ค่าสูงสุดอาจมาจากอาคารหรือแนวต้นไม้ เพราะข้อมูล SRTM วัดความสูงของพื้นผิว ไม่ใช่ระดับดิน</p>
+    <section aria-label="การกระจายความสูง" data-i18n-attr="aria-label:pi.hist" class="field">
+      <span class="field-label"><span data-i18n="pi.hist">การกระจายความสูง</span> <span class="hint" id="pi-hist-note"></span></span>
       <div class="hist" id="pi-hist" aria-hidden="true"></div>
       <div class="hist-axis"><span id="pi-hist-min"></span><span id="pi-hist-mid"></span><span id="pi-hist-max"></span></div>
     </section>
     <div class="group">
       <label class="field">
-        <span class="field-label">ขยายความสูง <output data-out="exaggeration"></output></span>
+        <span class="field-label"><span data-i18n="terrain.exag">ขยายความสูง</span> <output data-out="exaggeration"></output></span>
         <input type="range" min="1" max="100" step="1" data-bind="exaggeration" />
       </label>
       <div class="note" id="pi-exag-note" hidden></div>
-      <label class="check">เส้นเขตตำบล <input type="checkbox" data-bind="tambonLines" /></label>
-      <label class="check">หมุดสูงสุด–ต่ำสุด <input type="checkbox" data-bind="pins" /></label>
+      <label class="check"><span data-i18n="pi.tambonLines">เส้นเขตตำบล</span> <input type="checkbox" data-bind="tambonLines" /></label>
+      <label class="check"><span data-i18n="layers.pins">หมุดสูงสุด–ต่ำสุด</span> <input type="checkbox" data-bind="pins" /></label>
     </div>
-    <section class="group" aria-label="อำเภอ">
-      <span class="field-label" id="pi-amphoe-title">อำเภอ</span>
+    <section class="group" aria-label="อำเภอ" data-i18n-attr="aria-label:pi.amphoe">
+      <span class="field-label" id="pi-amphoe-title" data-i18n="pi.amphoe">อำเภอ</span>
       <div class="place-list" id="pi-amphoe"></div>
     </section>
     <p class="hint" id="pi-res"></p>
   </aside>
 
   <!-- Mobile sheet -->
-  <section class="sheet" aria-label="ข้อมูลจุดที่แตะ">
+  <section class="sheet" aria-label="ข้อมูลจุดที่แตะ" data-i18n-attr="aria-label:sheet.label">
     <div class="grab" aria-hidden="true"></div>
     <div class="top">
       <div style="min-width:0">
-        <div id="sheet-place">แตะที่แผนที่เพื่อดูความสูง</div>
+        <div id="sheet-place" data-i18n="hud.idleTouch">แตะที่แผนที่เพื่อดูความสูง</div>
         <div id="sheet-coord"></div>
       </div>
       <div id="sheet-h"></div>
@@ -648,10 +713,10 @@
       <div id="mini-ticks"></div>
     </div>
     <button type="button" class="primary" id="sheet-3d" hidden>ดู 3D จังหวัดนี้</button>
-    <div class="tabs" role="group" aria-label="แผง">
-      <button type="button" data-drawer="d-terrain" aria-pressed="false">ภูมิประเทศ</button>
-      <button type="button" data-drawer="d-layers" aria-pressed="false">ชั้นข้อมูล</button>
-      <button type="button" data-drawer="d-places" aria-pressed="false">สถานที่</button>
+    <div class="tabs" role="group" aria-label="แผง" data-i18n-attr="aria-label:sheet.tabs">
+      <button type="button" data-drawer="d-terrain" aria-pressed="false" data-i18n="rail.terrain">ภูมิประเทศ</button>
+      <button type="button" data-drawer="d-layers" aria-pressed="false" data-i18n="rail.layers">ชั้นข้อมูล</button>
+      <button type="button" data-drawer="d-places" aria-pressed="false" data-i18n="rail.places">สถานที่</button>
     </div>
   </section>
 

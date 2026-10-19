@@ -1,9 +1,14 @@
 // DOM-side pieces of the interface: drawers, legend, search, status chip, scale bar.
 // Nothing here knows about Three.js; main.js wires these to the scene.
 
+import { t, locale } from './i18n.js';
+
 const $ = (id) => document.getElementById(id);
-export const fmt = (n) => Math.round(n).toLocaleString('th-TH');
-export const fmtH = (h) => `${h > 0 ? '+' : ''}${fmt(h)} ม.`;
+export const fmt = (n) => Math.round(n).toLocaleString(locale());
+export const fmtM = (m) => `${fmt(m)} ${t('unit.m')}`;
+export const fmtH = (h) => `${h > 0 ? '+' : ''}${fmtM(h)}`;
+// Ground distance per pixel, in m below 1 km and km above.
+export const fmtDist = (m) => (m >= 1000 ? `${fmt(m / 1000)} ${t('unit.km')}` : fmtM(m));
 
 // ---------- drawers (left rail on desktop, sheet tabs on mobile) ----------
 // Buttons carry data-drawer="<id>"; the drawer with that id opens and the others close.
@@ -126,7 +131,7 @@ export function updateScaleBar(metersPerPx, maxPx = 120) {
   const mag = 10 ** Math.floor(Math.log10(maxM));
   const m = [5, 2, 1].map((k) => k * mag).find((v) => v <= maxM);
   $('scalebar-line').style.width = `${Math.round(m / metersPerPx)}px`;
-  $('scalebar-text').textContent = m >= 1000 ? `${fmt(m / 1000)} กม.` : `${fmt(m)} ม.`;
+  $('scalebar-text').textContent = fmtDist(m);
 }
 
 // ---------- search ----------
@@ -164,7 +169,7 @@ export function createSearch(input, list, onPick) {
       const lat = Number(coord[1]);
       const lon = Number(coord[2]);
       results = Math.abs(lat) <= 90 && Math.abs(lon) <= 180
-        ? [{ kind: 'coord', lat, lon, label: `${lat.toFixed(4)}, ${lon.toFixed(4)}`, sub: 'ไปยังพิกัด' }]
+        ? [{ kind: 'coord', lat, lon, label: `${lat.toFixed(4)}, ${lon.toFixed(4)}`, sub: t('search.coord') }]
         : [];
     } else if (!q) {
       results = [];

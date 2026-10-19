@@ -1,6 +1,6 @@
 {
  "generated": "2026-10-19T17:55:20.177Z",
- "source": "AWS Terrain Tiles (despiked), OpenGISData-Thailand (CC BY 4.0), peak names © OpenStreetMap contributors (ODbL)",
+ "source": "AWS Terrain Tiles (despiked), OpenGISData-Thailand (CC BY 4.0), peak names (th/en) © OpenStreetMap contributors (ODbL)",
  "note": "Lowest = lowest land (≥ 0 m) above the bottom 0.1 % of samples; heights are from the elevation model and may differ from surveyed values.",
  "provinces": {
   "10": {
@@ -12,14 +12,16 @@
     "name": null,
     "place": "แขวงบางโพงพาง เขตยานนาวา",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 13.9525,
     "lon": 100.57623,
     "h": 0,
     "name": null,
-    "place": "แขวงสีกัน เขตดอนเมือง"
+    "place": "แขวงสีกัน เขตดอนเมือง",
+    "nameEn": null
    },
    "hist": [
     968083,
@@ -49,14 +51,16 @@
     "name": null,
     "place": "ต.คลองด่าน อ.บางบ่อ",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 13.71652,
     "lon": 100.73381,
     "h": 0,
     "name": null,
-    "place": "ต.ราชาเทวะ อ.บางพลี"
+    "place": "ต.ราชาเทวะ อ.บางพลี",
+    "nameEn": null
    },
    "hist": [
     628240,
@@ -86,14 +90,16 @@
     "name": null,
     "place": "ต.ปากเกร็ด อ.ปากเกร็ด",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 14.12804,
     "lon": 100.31839,
     "h": 0,
     "name": null,
-    "place": "ต.ราษฎร์นิยม อ.ไทรน้อย"
+    "place": "ต.ราษฎร์นิยม อ.ไทรน้อย",
+    "nameEn": null
    },
    "hist": [
     148679,
@@ -123,14 +129,16 @@
     "name": null,
     "place": "ต.คลองหก อ.คลองหลวง",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 14.25981,
     "lon": 100.94667,
     "h": 0,
     "name": null,
-    "place": "ต.ศาลาครุ อ.หนองเสือ"
+    "place": "ต.ศาลาครุ อ.หนองเสือ",
+    "nameEn": null
    },
    "hist": [
     1062066,
@@ -160,14 +168,16 @@
     "name": null,
     "place": "ต.ลุมพลี อ.พระนครศรีอยุธยา",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 14.64004,
     "lon": 100.52954,
     "h": 0,
     "name": null,
-    "place": "ต.สองห้อง อ.บ้านแพรก"
+    "place": "ต.สองห้อง อ.บ้านแพรก",
+    "nameEn": null
    },
    "hist": [
     413096,
@@ -197,14 +207,16 @@
     "name": null,
     "place": "ต.ป่าโมก อ.ป่าโมก",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 14.7733,
     "lon": 100.29539,
     "h": 1,
     "name": null,
-    "place": "ต.แสวงหา อ.แสวงหา"
+    "place": "ต.แสวงหา อ.แสวงหา",
+    "nameEn": null
    },
    "hist": [
     49531,
@@ -234,14 +246,16 @@
     "name": null,
     "place": "ต.กุดตาเพชร อ.ลำสนธิ",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 14.9957,
     "lon": 100.47804,
     "h": 4,
     "name": null,
-    "place": "ต.มหาสอน อ.บ้านหมี่"
+    "place": "ต.มหาสอน อ.บ้านหมี่",
+    "nameEn": null
    },
    "hist": [
     1950734,
@@ -271,14 +285,16 @@
     "name": null,
     "place": "ต.บางกระบือ อ.เมืองสิงห์บุรี",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.04464,
     "lon": 100.37401,
     "h": 5,
     "name": null,
-    "place": "ต.ทองเอน อ.อินทร์บุรี"
+    "place": "ต.ทองเอน อ.อินทร์บุรี",
+    "nameEn": null
    },
    "hist": [
     9933,
@@ -308,14 +324,16 @@
     "name": null,
     "place": "ต.กะบกเตี้ย อ.เนินขาม",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.22056,
     "lon": 100.23394,
     "h": 9,
     "name": null,
-    "place": "ต.ตลุก อ.สรรพยา"
+    "place": "ต.ตลุก อ.สรรพยา",
+    "nameEn": null
    },
    "hist": [
     1190633,
@@ -345,14 +363,16 @@
     "name": null,
     "place": "ต.มิตรภาพ อ.มวกเหล็ก",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 14.69775,
     "lon": 100.68266,
     "h": 1,
     "name": null,
-    "place": "ต.หนองโดน อ.หนองโดน"
+    "place": "ต.หนองโดน อ.หนองโดน",
+    "nameEn": null
    },
    "hist": [
     1386626,
@@ -382,14 +402,16 @@
     "name": null,
     "place": "ต.บ้านบึง อ.บ้านบึง",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 13.58589,
     "lon": 101.15473,
     "h": 0,
     "name": null,
-    "place": "ต.ท่าข้าม อ.พนัสนิคม"
+    "place": "ต.ท่าข้าม อ.พนัสนิคม",
+    "nameEn": null
    },
    "hist": [
     1468640,
@@ -419,14 +441,16 @@
     "name": "เขาชะเมา",
     "place": "ต.น้ำเป็น อ.เขาชะเมา",
     "peakEle": 1036,
-    "peakDistance": 379
+    "peakDistance": 379,
+    "nameEn": "Khao Chamao"
    },
    "min": {
     "lat": 12.81737,
     "lon": 101.30098,
     "h": 0,
     "name": null,
-    "place": "ต.บางบุตร อ.บ้านค่าย"
+    "place": "ต.บางบุตร อ.บ้านค่าย",
+    "nameEn": null
    },
    "hist": [
     1847334,
@@ -456,14 +480,16 @@
     "name": null,
     "place": "ต.ทับไทร อ.โป่งน้ำร้อน",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 12.76506,
     "lon": 101.83588,
     "h": 0,
     "name": null,
-    "place": "ต.นายายอาม อ.นายายอาม"
+    "place": "ต.นายายอาม อ.นายายอาม",
+    "nameEn": null
    },
    "hist": [
     2506575,
@@ -493,14 +519,16 @@
     "name": null,
     "place": "ต.ท่ากุ่ม อ.เมืองตราด",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 12.49762,
     "lon": 102.3361,
     "h": 0,
     "name": null,
-    "place": "ต.ประณีต อ.เขาสมิง"
+    "place": "ต.ประณีต อ.เขาสมิง",
+    "nameEn": null
    },
    "hist": [
     1539639,
@@ -530,14 +558,16 @@
     "name": null,
     "place": "ต.คลองตะเกรา อ.ท่าตะเกียบ",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 13.97165,
     "lon": 101.07714,
     "h": 0,
     "name": null,
-    "place": "ต.ดอนเกาะกา อ.บางน้ำเปรี้ยว"
+    "place": "ต.ดอนเกาะกา อ.บางน้ำเปรี้ยว",
+    "nameEn": null
    },
    "hist": [
     2313635,
@@ -567,14 +597,16 @@
     "name": null,
     "place": "ต.โพธิ์งาม อ.ประจันตคาม",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 14.11555,
     "lon": 101.31678,
     "h": 0,
     "name": null,
-    "place": "ต.บ้านพระ อ.เมืองปราจีนบุรี"
+    "place": "ต.บ้านพระ อ.เมืองปราจีนบุรี",
+    "nameEn": null
    },
    "hist": [
     2656855,
@@ -604,14 +636,16 @@
     "name": "เขาร่ม",
     "place": "ต.นาหินลาด อ.ปากพลี",
     "peakEle": 1351,
-    "peakDistance": 582
+    "peakDistance": 582,
+    "nameEn": "Khao Rom"
    },
    "min": {
     "lat": 14.27727,
     "lon": 101.00744,
     "h": 0,
     "name": null,
-    "place": "ต.บ้านพริก อ.บ้านนา"
+    "place": "ต.บ้านพริก อ.บ้านนา",
+    "nameEn": null
    },
    "hist": [
     1123518,
@@ -641,14 +675,16 @@
     "name": null,
     "place": "ต.ท่าแยก อ.เมืองสระแก้ว",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 13.9627,
     "lon": 101.97458,
     "h": 20,
     "name": null,
-    "place": "ต.บ้านแก้ง อ.เมืองสระแก้ว"
+    "place": "ต.บ้านแก้ง อ.เมืองสระแก้ว",
+    "nameEn": null
    },
    "hist": [
     2217125,
@@ -678,14 +714,16 @@
     "name": "เขาร่ม",
     "place": "ต.หมูสี อ.ปากช่อง",
     "peakEle": 1351,
-    "peakDistance": 503
+    "peakDistance": 503,
+    "nameEn": "Khao Rom"
    },
    "min": {
     "lat": 15.32415,
     "lon": 101.39591,
     "h": 125,
     "name": null,
-    "place": "ต.บึงปรือ อ.เทพารักษ์"
+    "place": "ต.บึงปรือ อ.เทพารักษ์",
+    "nameEn": null
    },
    "hist": [
     1725453,
@@ -715,14 +753,16 @@
     "name": null,
     "place": null,
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.34471,
     "lon": 103.3556,
     "h": 126,
     "name": null,
-    "place": "ต.สะแก อ.สตึก"
+    "place": "ต.สะแก อ.สตึก",
+    "nameEn": null
    },
    "hist": [
     658956,
@@ -752,14 +792,16 @@
     "name": null,
     "place": "ต.จรัส อ.บัวเชด",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.46163,
     "lon": 103.84981,
     "h": 117,
     "name": null,
-    "place": "ต.กุดขาคีม อ.รัตนบุรี"
+    "place": "ต.กุดขาคีม อ.รัตนบุรี",
+    "nameEn": null
    },
    "hist": [
     1884914,
@@ -789,14 +831,16 @@
     "name": null,
     "place": "ต.ห้วยจันทร์ อ.ขุนหาญ",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.51316,
     "lon": 104.06027,
     "h": 113,
     "name": null,
-    "place": "ต.กุง อ.ศิลาลาด"
+    "place": "ต.กุง อ.ศิลาลาด",
+    "nameEn": null
    },
    "hist": [
     4085435,
@@ -826,14 +870,16 @@
     "name": null,
     "place": "ต.โดมประดิษฐ์ อ.น้ำยืน",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.75208,
     "lon": 105.44163,
     "h": 101,
     "name": null,
-    "place": "ต.เหล่างาม อ.โพธิ์ไทร"
+    "place": "ต.เหล่างาม อ.โพธิ์ไทร",
+    "nameEn": null
    },
    "hist": [
     1415245,
@@ -863,14 +909,16 @@
     "name": "ภูสระดอกบัว",
     "place": "ต.บุ่งค้า อ.เลิงนกทา",
     "peakEle": 423,
-    "peakDistance": 2379
+    "peakDistance": 2379,
+    "nameEn": "Phu Sa Dok Bua"
    },
    "min": {
     "lat": 15.6603,
     "lon": 104.17253,
     "h": 115,
     "name": null,
-    "place": "ต.สงเปือย อ.คำเขื่อนแก้ว"
+    "place": "ต.สงเปือย อ.คำเขื่อนแก้ว",
+    "nameEn": null
    },
    "hist": [
     1273433,
@@ -900,14 +948,16 @@
     "name": null,
     "place": "ต.นางแดด อ.หนองบัวแดง",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.99647,
     "lon": 102.36889,
     "h": 166,
     "name": null,
-    "place": "ต.ศรีสำราญ อ.คอนสวรรค์"
+    "place": "ต.ศรีสำราญ อ.คอนสวรรค์",
+    "nameEn": null
    },
    "hist": [
     1062052,
@@ -937,14 +987,16 @@
     "name": "ภูสระดอกบัว",
     "place": "ต.คำเขื่อนแก้ว อ.ชานุมาน",
     "peakEle": 423,
-    "peakDistance": 2300
+    "peakDistance": 2300,
+    "nameEn": "Phu Sa Dok Bua"
    },
    "min": {
     "lat": 15.85366,
     "lon": 104.45818,
     "h": 117,
     "name": null,
-    "place": "ต.นาหมอม้า อ.เมืองอำนาจเจริญ"
+    "place": "ต.นาหมอม้า อ.เมืองอำนาจเจริญ",
+    "nameEn": null
    },
    "hist": [
     730312,
@@ -974,14 +1026,16 @@
     "name": null,
     "place": "ต.โพธิ์หมากแข้ง อ.บึงโขงหลง",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 18.29885,
     "lon": 103.84363,
     "h": 140,
     "name": null,
-    "place": "ต.โคกก่อง อ.บึงกาฬ"
+    "place": "ต.โคกก่อง อ.บึงกาฬ",
+    "nameEn": null
    },
    "hist": [
     1953652,
@@ -1011,14 +1065,16 @@
     "name": null,
     "place": "ต.โนนสะอาด อ.ศรีบุญเรือง",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 16.87475,
     "lon": 102.57883,
     "h": 178,
     "name": null,
-    "place": "ต.โนนสัง อ.โนนสัง"
+    "place": "ต.โนนสัง อ.โนนสัง",
+    "nameEn": null
    },
    "hist": [
     1066148,
@@ -1048,14 +1104,16 @@
     "name": "ยอดผานกเค้า",
     "place": "ต.นาหนองทุ่ม อ.ชุมแพ",
     "peakEle": null,
-    "peakDistance": 799
+    "peakDistance": 799,
+    "nameEn": null
    },
    "min": {
     "lat": 16.45595,
     "lon": 102.8928,
     "h": 149,
     "name": null,
-    "place": "ต.บึงเนียม อ.เมืองขอนแก่น"
+    "place": "ต.บึงเนียม อ.เมืองขอนแก่น",
+    "nameEn": null
    },
    "hist": [
     1071504,
@@ -1085,14 +1143,16 @@
     "name": "ภูผาห้วยหินขาว",
     "place": "ต.นาแค อ.นายูง",
     "peakEle": 997,
-    "peakDistance": 107
+    "peakDistance": 107,
+    "nameEn": "Phu Pha Huai Hin Khao"
    },
    "min": {
     "lat": 17.90184,
     "lon": 103.40572,
     "h": 152,
     "name": null,
-    "place": "ต.บ้านจันทน์ อ.บ้านดุง"
+    "place": "ต.บ้านจันทน์ อ.บ้านดุง",
+    "nameEn": null
    },
    "hist": [
     1417319,
@@ -1122,14 +1182,16 @@
     "name": "ภูทับเบิก",
     "place": "ต.กกสะทอน อ.ด่านซ้าย",
     "peakEle": null,
-    "peakDistance": 91
+    "peakDistance": 91,
+    "nameEn": "Phu Thap Boek"
    },
    "min": {
     "lat": 18.21228,
     "lon": 102.08668,
     "h": 187,
     "name": null,
-    "place": "ต.หาดคัมภีร์ อ.ปากชม"
+    "place": "ต.หาดคัมภีร์ อ.ปากชม",
+    "nameEn": null
    },
    "hist": [
     519433,
@@ -1159,14 +1221,16 @@
     "name": null,
     "place": "ต.นางิ้ว อ.สังคม",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 18.26411,
     "lon": 103.26239,
     "h": 150,
     "name": null,
-    "place": "ต.บ้านต้อน อ.รัตนวาปี"
+    "place": "ต.บ้านต้อน อ.รัตนวาปี",
+    "nameEn": null
    },
    "hist": [
     2173777,
@@ -1196,14 +1260,16 @@
     "name": null,
     "place": "ต.โพนงาม อ.โกสุมพิสัย",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.54506,
     "lon": 103.33895,
     "h": 130,
     "name": null,
-    "place": "ต.หนองบัวแก้ว อ.พยัคฆภูมิพิสัย"
+    "place": "ต.หนองบัวแก้ว อ.พยัคฆภูมิพิสัย",
+    "nameEn": null
    },
    "hist": [
     354552,
@@ -1233,14 +1299,16 @@
     "name": null,
     "place": "ต.บึงงาม อ.หนองพอก",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.72246,
     "lon": 104.12825,
     "h": 118,
     "name": null,
-    "place": "ต.แสนสุข อ.พนมไพร"
+    "place": "ต.แสนสุข อ.พนมไพร",
+    "nameEn": null
    },
    "hist": [
     3739605,
@@ -1270,14 +1338,16 @@
     "name": null,
     "place": "ต.นาทัน อ.คำม่วง",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 16.39335,
     "lon": 103.47559,
     "h": 133,
     "name": null,
-    "place": "ต.อุ่มเม่า อ.ยางตลาด"
+    "place": "ต.อุ่มเม่า อ.ยางตลาด",
+    "nameEn": null
    },
    "hist": [
     1722268,
@@ -1307,14 +1377,16 @@
     "name": null,
     "place": "ต.วาริชภูมิ อ.วาริชภูมิ",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 17.94179,
     "lon": 103.70098,
     "h": 143,
     "name": null,
-    "place": "ต.โนนสะอาด อ.บ้านม่วง"
+    "place": "ต.โนนสะอาด อ.บ้านม่วง",
+    "nameEn": null
    },
    "hist": [
     1037147,
@@ -1344,14 +1416,16 @@
     "name": "Phu Po",
     "place": "ต.คำพี้ อ.นาแก",
     "peakEle": 528,
-    "peakDistance": 2085
+    "peakDistance": 2085,
+    "nameEn": "Phu Po"
    },
    "min": {
     "lat": 17.47997,
     "lon": 104.68409,
     "h": 134,
     "name": null,
-    "place": "ต.เวินพระบาท อ.ท่าอุเทน"
+    "place": "ต.เวินพระบาท อ.ท่าอุเทน",
+    "nameEn": null
    },
    "hist": [
     3156859,
@@ -1381,14 +1455,16 @@
     "name": "Phu Po",
     "place": "ต.พังแดง อ.ดงหลวง",
     "peakEle": 528,
-    "peakDistance": 1946
+    "peakDistance": 1946,
+    "nameEn": "Phu Po"
    },
    "min": {
     "lat": 16.65698,
     "lon": 104.74588,
     "h": 132,
     "name": null,
-    "place": "ต.บางทรายน้อย อ.ว่านใหญ่"
+    "place": "ต.บางทรายน้อย อ.ว่านใหญ่",
+    "nameEn": null
    },
    "hist": [
     690329,
@@ -1418,14 +1494,16 @@
     "name": "ดอยอินทนนท์",
     "place": "ต.บ้านหลวง อ.จอมทอง",
     "peakEle": 2565,
-    "peakDistance": 42
+    "peakDistance": 42,
+    "nameEn": "Doi Inthanon"
    },
    "min": {
     "lat": 18.02768,
     "lon": 98.61568,
     "h": 241,
     "name": null,
-    "place": "ต.บงตัน อ.ดอยเต่า"
+    "place": "ต.บงตัน อ.ดอยเต่า",
+    "nameEn": null
    },
    "hist": [
     568856,
@@ -1455,14 +1533,16 @@
     "name": null,
     "place": "ต.ป่าพลู อ.บ้านโฮ่ง",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 17.46422,
     "lon": 98.68658,
     "h": 241,
     "name": null,
-    "place": "ต.ก้อ อ.ลี้"
+    "place": "ต.ก้อ อ.ลี้",
+    "nameEn": null
    },
    "hist": [
     545965,
@@ -1492,14 +1572,16 @@
     "name": "ดอยลังกาหลวง",
     "place": "ต.แจ้ซ้อน อ.เมืองปาน",
     "peakEle": 2022,
-    "peakDistance": 304
+    "peakDistance": 304,
+    "nameEn": "Doi Lanka Luang"
    },
    "min": {
     "lat": 17.34917,
     "lon": 99.45889,
     "h": 121,
     "name": null,
-    "place": "ต.เวียงมอก อ.เถิน"
+    "place": "ต.เวียงมอก อ.เถิน",
+    "nameEn": null
    },
    "hist": [
     334732,
@@ -1529,14 +1611,16 @@
     "name": "ลานสน",
     "place": "ต.ห้วยมุ่น อ.น้ำปาด",
     "peakEle": null,
-    "peakDistance": 2997
+    "peakDistance": 2997,
+    "nameEn": "Lan Son"
    },
    "min": {
     "lat": 17.2798,
     "lon": 99.98417,
     "h": 49,
     "name": null,
-    "place": "ต.คอรุม อ.พิชัย"
+    "place": "ต.คอรุม อ.พิชัย",
+    "nameEn": null
    },
    "hist": [
     553766,
@@ -1566,14 +1650,16 @@
     "name": null,
     "place": "ต.บ้านเวียง อ.ร้องกวาง",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 17.88958,
     "lon": 99.60583,
     "h": 101,
     "name": null,
-    "place": "ต.วังชิ้น อ.วังชิ้น"
+    "place": "ต.วังชิ้น อ.วังชิ้น",
+    "nameEn": null
    },
    "hist": [
     342484,
@@ -1603,14 +1689,16 @@
     "name": "ภูเข้",
     "place": "ต.บ่อเกลือเหนือ อ.บ่อเกลือ",
     "peakEle": 2079,
-    "peakDistance": 510
+    "peakDistance": 510,
+    "nameEn": "Phu Khe"
    },
    "min": {
     "lat": 18.20889,
     "lon": 100.81089,
     "h": 161,
     "name": null,
-    "place": "ต.บ่อแก้ว อ.นาหมื่น"
+    "place": "ต.บ่อแก้ว อ.นาหมื่น",
+    "nameEn": null
    },
    "hist": [
     387660,
@@ -1640,14 +1728,16 @@
     "name": null,
     "place": "ต.แม่ลาว อ.เชียงคำ",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 18.93837,
     "lon": 100.23771,
     "h": 259,
     "name": null,
-    "place": "ต.สระ อ.เชียงม่วน"
+    "place": "ต.สระ อ.เชียงม่วน",
+    "nameEn": null
    },
    "hist": [
     422087,
@@ -1677,14 +1767,16 @@
     "name": "ดอยแม่โถ",
     "place": "ต.แม่เจดีย์ใหม่ อ.เวียงป่าเป้า",
     "peakEle": 2031,
-    "peakDistance": 30
+    "peakDistance": 30,
+    "nameEn": "Doi Mae Tho"
    },
    "min": {
     "lat": 20.25113,
     "lon": 100.41882,
     "h": 348,
     "name": null,
-    "place": "ต.เวียง อ.เชียงของ"
+    "place": "ต.เวียง อ.เชียงของ",
+    "nameEn": null
    },
    "hist": [
     1000605,
@@ -1714,14 +1806,16 @@
     "name": "ดอยโป่งสะแยน",
     "place": "ต.ห้วยโป่ง อ.เมืองแม่ฮ่องสอน",
     "peakEle": 2005,
-    "peakDistance": 21
+    "peakDistance": 21,
+    "nameEn": "Doi Pong Sa Yaen"
    },
    "min": {
     "lat": 18.38384,
     "lon": 97.45182,
     "h": 75,
     "name": null,
-    "place": "ต.แม่คง อ.แม่สะเรียง"
+    "place": "ต.แม่คง อ.แม่สะเรียง",
+    "nameEn": null
    },
    "hist": [
     46458,
@@ -1751,14 +1845,16 @@
     "name": null,
     "place": "ต.แม่เลย์ อ.แม่วงก์",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.21491,
     "lon": 100.31788,
     "h": 11,
     "name": null,
-    "place": "ต.หนองหม้อ อ.ตาคลี"
+    "place": "ต.หนองหม้อ อ.ตาคลี",
+    "nameEn": null
    },
    "hist": [
     1544715,
@@ -1788,14 +1884,16 @@
     "name": null,
     "place": "ต.แก่นมะกรูด อ.บ้านไร่",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 15.45688,
     "lon": 100.03618,
     "h": 18,
     "name": null,
-    "place": "ต.เนินแจง อ.เมืองอุทัยธานี"
+    "place": "ต.เนินแจง อ.เมืองอุทัยธานี",
+    "nameEn": null
    },
    "hist": [
     1844348,
@@ -1825,14 +1923,16 @@
     "name": "เขาโมโกจู",
     "place": "ต.ปางตาไว อ.ปางศิลาทอง",
     "peakEle": 1951,
-    "peakDistance": 45
+    "peakDistance": 45,
+    "nameEn": null
    },
    "min": {
     "lat": 16.70064,
     "lon": 99.71689,
     "h": 40,
     "name": null,
-    "place": "ต.วังตะแบก อ.พรานกระต่าย"
+    "place": "ต.วังตะแบก อ.พรานกระต่าย",
+    "nameEn": null
    },
    "hist": [
     5068317,
@@ -1862,14 +1962,16 @@
     "name": null,
     "place": "ต.โมโกร อ.อุ้มผาง",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 17.67365,
     "lon": 97.81162,
     "h": 98,
     "name": null,
-    "place": "ต.ท่าสองยาง อ.ท่าสองยาง"
+    "place": "ต.ท่าสองยาง อ.ท่าสองยาง",
+    "nameEn": null
    },
    "hist": [
     700752,
@@ -1899,14 +2001,16 @@
     "name": "ยอดภูกา",
     "place": "ต.ศรีคีรีมาศ อ.คีรีมาศ",
     "peakEle": 1244,
-    "peakDistance": 52
+    "peakDistance": 52,
+    "nameEn": "Khao Phu Ka - Sunset Viewpoint"
    },
    "min": {
     "lat": 17.11844,
     "lon": 99.79517,
     "h": 40,
     "name": null,
-    "place": "ต.วังใหญ่ อ.ศรีสำโรง"
+    "place": "ต.วังใหญ่ อ.ศรีสำโรง",
+    "nameEn": null
    },
    "hist": [
     3389647,
@@ -1936,14 +2040,16 @@
     "name": "ภูสอยดาว",
     "place": "ต.บ่อภาค อ.ชาติตระการ",
     "peakEle": 2120,
-    "peakDistance": 18
+    "peakDistance": 18,
+    "nameEn": "Phu Soi Dao"
    },
    "min": {
     "lat": 16.71152,
     "lon": 100.30758,
     "h": 37,
     "name": null,
-    "place": "ต.แม่ระกา อ.วังทอง"
+    "place": "ต.แม่ระกา อ.วังทอง",
+    "nameEn": null
    },
    "hist": [
     926068,
@@ -1973,14 +2079,16 @@
     "name": null,
     "place": "ต.วังงิ้ว อ.ดงเจริญ",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 16.2411,
     "lon": 100.38603,
     "h": 26,
     "name": null,
-    "place": "ต.ห้วยเกตุ อ.ตะพานหิน"
+    "place": "ต.ห้วยเกตุ อ.ตะพานหิน",
+    "nameEn": null
    },
    "hist": [
     3120015,
@@ -2010,14 +2118,16 @@
     "name": "ภูทับเบิก",
     "place": "ต.บ้านเนิน อ.หล่มเก่า",
     "peakEle": null,
-    "peakDistance": 1554
+    "peakDistance": 1554,
+    "nameEn": "Phu Thap Boek"
    },
    "min": {
     "lat": 16.08273,
     "lon": 100.6509,
     "h": 53,
     "name": null,
-    "place": "ต.ดงขุย อ.ชนแดน"
+    "place": "ต.ดงขุย อ.ชนแดน",
+    "nameEn": null
    },
    "hist": [
     1117510,
@@ -2047,14 +2157,16 @@
     "name": null,
     "place": "ต.บ้านบึง อ.บ้านคา",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 13.91292,
     "lon": 99.88066,
     "h": 2,
     "name": null,
-    "place": "ต.กรับใหญ่ อ.บ้านโป่ง"
+    "place": "ต.กรับใหญ่ อ.บ้านโป่ง",
+    "nameEn": null
    },
    "hist": [
     1675465,
@@ -2084,14 +2196,16 @@
     "name": null,
     "place": "ต.ไล่โว่ อ.สังขละบุรี",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 14.30951,
     "lon": 99.81869,
     "h": 11,
     "name": null,
-    "place": "ต.ดอนแสลบ อ.ห้วยกระเจา"
+    "place": "ต.ดอนแสลบ อ.ห้วยกระเจา",
+    "nameEn": null
    },
    "hist": [
     998373,
@@ -2121,14 +2235,16 @@
     "name": "เทวดา",
     "place": "ต.วังยาว อ.ด่านช้าง",
     "peakEle": 1123,
-    "peakDistance": 18
+    "peakDistance": 18,
+    "nameEn": "Thewada"
    },
    "min": {
     "lat": 14.87192,
     "lon": 100.11995,
     "h": 1,
     "name": null,
-    "place": "ต.เขาพระ อ.เดิมบางนางบวช"
+    "place": "ต.เขาพระ อ.เดิมบางนางบวช",
+    "nameEn": null
    },
    "hist": [
     3094737,
@@ -2158,14 +2274,16 @@
     "name": null,
     "place": "ต.หนองกระทุ่ม อ.กำแพงแสน",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 14.17258,
     "lon": 100.20853,
     "h": 0,
     "name": null,
-    "place": "ต.บัวปากท่า อ.บางเลน"
+    "place": "ต.บัวปากท่า อ.บางเลน",
+    "nameEn": null
    },
    "hist": [
     289365,
@@ -2195,14 +2313,16 @@
     "name": null,
     "place": "ต.บางกระเจ้า อ.เมืองสมุทรสาคร",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 13.71517,
     "lon": 100.32286,
     "h": 0,
     "name": null,
-    "place": "ต.อ้อมน้อย อ.กระทุ่มแบน"
+    "place": "ต.อ้อมน้อย อ.กระทุ่มแบน",
+    "nameEn": null
    },
    "hist": [
     455905,
@@ -2232,14 +2352,16 @@
     "name": null,
     "place": "ต.บางนกแขวก อ.บางคนที",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 13.49257,
     "lon": 100.0276,
     "h": 0,
     "name": null,
-    "place": "ต.นางตะเคียน อ.เมืองสมุทรสงคราม"
+    "place": "ต.นางตะเคียน อ.เมืองสมุทรสงคราม",
+    "nameEn": null
    },
    "hist": [
     202119,
@@ -2269,14 +2391,16 @@
     "name": "เขางะยันนิกยวกตอง",
     "place": "ต.ห้วยแม่เพรียง อ.แก่งกระจาน",
     "peakEle": 1399,
-    "peakDistance": 2133
+    "peakDistance": 2133,
+    "nameEn": "Ngayanni Kyauk Taung"
    },
    "min": {
     "lat": 13.32885,
     "lon": 99.84632,
     "h": 0,
     "name": null,
-    "place": "ต.ห้วยโรง อ.เขาย้อย"
+    "place": "ต.ห้วยโรง อ.เขาย้อย",
+    "nameEn": null
    },
    "hist": [
     1807432,
@@ -2306,14 +2430,16 @@
     "name": "ခေါက်ရိုင်တောင်",
     "place": "ต.เขาจ้าว อ.ปราณบุรี",
     "peakEle": 1345,
-    "peakDistance": 65
+    "peakDistance": 65,
+    "nameEn": "ခေါက်ရိုင်တောင်"
    },
    "min": {
     "lat": 12.63241,
     "lon": 99.95533,
     "h": 0,
     "name": null,
-    "place": "ต.หัวหิน อ.หัวหิน"
+    "place": "ต.หัวหิน อ.หัวหิน",
+    "nameEn": null
    },
    "hist": [
     541032,
@@ -2343,14 +2469,16 @@
     "name": "เขาหลวง",
     "place": "ต.พรหมโลก อ.พรหมคีรี",
     "peakEle": 1800,
-    "peakDistance": 40
+    "peakDistance": 40,
+    "nameEn": "Khao Luang"
    },
    "min": {
     "lat": 9.27831,
     "lon": 99.83997,
     "h": 0,
     "name": null,
-    "place": "ต.ท้องเนียน อ.ขนอม"
+    "place": "ต.ท้องเนียน อ.ขนอม",
+    "nameEn": null
    },
    "hist": [
     1311459,
@@ -2380,14 +2508,16 @@
     "name": "เขาพนมเบ็ญจา",
     "place": "ต.หน้าเขา อ.เขาพนม",
     "peakEle": 1380,
-    "peakDistance": 13
+    "peakDistance": 13,
+    "nameEn": "Khao Phanom Bencha"
    },
    "min": {
     "lat": 8.36379,
     "lon": 98.62753,
     "h": 0,
     "name": null,
-    "place": "ต.แหลมสัก อ.อ่าวลึก"
+    "place": "ต.แหลมสัก อ.อ่าวลึก",
+    "nameEn": null
    },
    "hist": [
     2860568,
@@ -2417,14 +2547,16 @@
     "name": null,
     "place": "ต.คุระ อ.คุระบุรี",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 9.49447,
     "lon": 97.87411,
     "h": 0,
     "name": null,
-    "place": null
+    "place": null,
+    "nameEn": null
    },
    "hist": [
     508505,
@@ -2454,14 +2586,16 @@
     "name": null,
     "place": "ต.ป่าตอง อ.กะทู้",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 8.13434,
     "lon": 98.36592,
     "h": 0,
     "name": null,
-    "place": "ต.เทพกระษัตรี อ.ถลาง"
+    "place": "ต.เทพกระษัตรี อ.ถลาง",
+    "nameEn": null
    },
    "hist": [
     223741,
@@ -2491,14 +2625,16 @@
     "name": "Khao Nong",
     "place": "ต.ลำพูน อ.บ้านนาสาร",
     "peakEle": 1540,
-    "peakDistance": 26
+    "peakDistance": 26,
+    "nameEn": "Khao Nong"
    },
    "min": {
     "lat": 9.76168,
     "lon": 100.07275,
     "h": 2,
     "name": null,
-    "place": "ต.บ้านใต้ อ.เกาะพะงัน"
+    "place": "ต.บ้านใต้ อ.เกาะพะงัน",
+    "nameEn": null
    },
    "hist": [
     1469822,
@@ -2528,14 +2664,16 @@
     "name": null,
     "place": "ต.นาคา อ.สุขสำราญ",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 10.34411,
     "lon": 98.7446,
     "h": 0,
     "name": null,
-    "place": "ต.ลำเลียง อ.กระบุรี"
+    "place": "ต.ลำเลียง อ.กระบุรี",
+    "nameEn": null
    },
    "hist": [
     1053777,
@@ -2565,14 +2703,16 @@
     "name": null,
     "place": "ต.พะโต๊ะ อ.พะโต๊ะ",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 10.92339,
     "lon": 99.4939,
     "h": 2,
     "name": null,
-    "place": "ต.ปากคลอง อ.ปะทิว"
+    "place": "ต.ปากคลอง อ.ปะทิว",
+    "nameEn": null
    },
    "hist": [
     524352,
@@ -2602,14 +2742,16 @@
     "name": null,
     "place": "ต.บ้านโหนด อ.สะบ้าย้อย",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 7.93148,
     "lon": 100.3117,
     "h": 0,
     "name": null,
-    "place": "ต.คลองแดน อ.ระโนด"
+    "place": "ต.คลองแดน อ.ระโนด",
+    "nameEn": null
    },
    "hist": [
     878513,
@@ -2639,14 +2781,16 @@
     "name": null,
     "place": "ต.เกาะสาหร่าย อ.เมืองสตูล",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 7.06853,
     "lon": 99.72273,
     "h": 0,
     "name": null,
-    "place": "ต.นาทอน อ.ทุ่งหว้า"
+    "place": "ต.นาทอน อ.ทุ่งหว้า",
+    "nameEn": null
    },
    "hist": [
     1219613,
@@ -2676,14 +2820,16 @@
     "name": "Khao Lak",
     "place": "ต.นาชุมเห็ด อ.ย่านตาขาว",
     "peakEle": 1355,
-    "peakDistance": 176
+    "peakDistance": 176,
+    "nameEn": "Khao Lak"
    },
    "min": {
     "lat": 7.63311,
     "lon": 99.23967,
     "h": 0,
     "name": null,
-    "place": "ต.เขาไม้แก้ว อ.สิเกา"
+    "place": "ต.เขาไม้แก้ว อ.สิเกา",
+    "nameEn": null
    },
    "hist": [
     2557088,
@@ -2713,14 +2859,16 @@
     "name": "Khao Lak",
     "place": "ต.บ้านนา อ.ศรีนครินทร์",
     "peakEle": 1355,
-    "peakDistance": 83
+    "peakDistance": 83,
+    "nameEn": "Khao Lak"
    },
    "min": {
     "lat": 7.87774,
     "lon": 100.17454,
     "h": 0,
     "name": null,
-    "place": "ต.ทะเลน้อย อ.ควนขนุน"
+    "place": "ต.ทะเลน้อย อ.ควนขนุน",
+    "nameEn": null
    },
    "hist": [
     2122006,
@@ -2750,14 +2898,16 @@
     "name": null,
     "place": "ต.ทุ่งพลา อ.โคกโพธิ์",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 6.94906,
     "lon": 101.28828,
     "h": 0,
     "name": null,
-    "place": "ต.แหลมโพธิ์ อ.ยะหริ่ง"
+    "place": "ต.แหลมโพธิ์ อ.ยะหริ่ง",
+    "nameEn": null
    },
    "hist": [
     1255831,
@@ -2787,14 +2937,16 @@
     "name": null,
     "place": "ต.อัยเยอร์เวง อ.เบตง",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 6.68277,
     "lon": 101.29034,
     "h": 9,
     "name": null,
-    "place": "ต.ตาเซะ อ.เมืองยะลา"
+    "place": "ต.ตาเซะ อ.เมืองยะลา",
+    "nameEn": null
    },
    "hist": [
     889913,
@@ -2824,14 +2976,16 @@
     "name": null,
     "place": "ต.ช้างเผือก อ.จะแนะ",
     "peakEle": null,
-    "peakDistance": null
+    "peakDistance": null,
+    "nameEn": null
    },
    "min": {
     "lat": 6.57356,
     "lon": 101.66937,
     "h": 1,
     "name": null,
-    "place": "ต.บาเระใต้ อ.บาเจาะ"
+    "place": "ต.บาเระใต้ อ.บาเจาะ",
+    "nameEn": null
    },
    "hist": [
     1916501,

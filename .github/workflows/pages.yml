@@ -23,13 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # The site is static. /thai is the same page in Thai-only mode, so the build copies
-      # index.html to thai/index.html with <base href="../"> for its relative paths.
+      # One index.html rendered per page (/, /thai/, /en/, /en/thai/) with its own <base>
+      # and SEO block, plus sitemap.xml and robots.txt (see tools/build.py).
       - name: Build site
-        run: |
-          mkdir -p _site/thai
-          cp -r index.html src data _site/
-          sed 's|<head>|<head>\n  <base href="../">|' index.html > _site/thai/index.html
+        run: python3 tools/build.py _site
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

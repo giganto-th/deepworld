@@ -1,0 +1,17 @@
+{
+  "name": "DeepWorld — 3D Terrain",
+  "short_name": "DeepWorld",
+  "description": "3D elevation map of the world and Thailand · แผนที่ภูมิประเทศ 3 มิติของโลกและประเทศไทย",
+  "lang": "th",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#05070d",
+  "theme_color": "#05070d",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
