@@ -24,3 +24,9 @@ python3 serve.py 8173
 ## เอกสาร
 
 ผลการวิจัย การวิเคราะห์ และการออกแบบอยู่ใน [docs/DESIGN.md](docs/DESIGN.md)
+
+## Deploy
+
+ทุกครั้งที่ push ขึ้น `main` workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) จะ deploy ขึ้น GitHub Pages ให้อัตโนมัติ
+- ทั้งโลก: https://giganto-th.github.io/deepworld/
+- เฉพาะประเทศไทย: https://giganto-th.github.io/deepworld/thai/
