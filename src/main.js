@@ -20,6 +20,11 @@ const PROVINCES_URL =
   'https://cdn.jsdelivr.net/gh/chingchai/OpenGISData-Thailand@master/provinces.geojson';
 const SUBDISTRICTS_URL =
   'https://cdn.jsdelivr.net/gh/chingchai/OpenGISData-Thailand@master/subdistricts.geojson';
+// Country borders (land boundary lines) and outlines for naming the country under the cursor.
+const NE = 'https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson';
+const BORDERS_URL = `${NE}/ne_50m_admin_0_boundary_lines_land.geojson`;
+const COUNTRIES_URL = `${NE}/ne_110m_admin_0_countries.geojson`;
+const COUNTRY_TH_URL = 'data/countries-th.json';
 // Precomputed per-province highest/lowest points with place names (tools/precompute.html).
 const EXTREMES_URL = 'data/province-extremes.json';
 // The world's 10 highest peaks and 10 deepest points (curated, see the file's sources).
@@ -99,6 +104,7 @@ const state = {
   range: 'local',
   orbit: false,
   worldPois: !THAI_MODE,
+  borders: !THAI_MODE,
 };
 
 // OrbitControls fixes its "up" when created, so switching between the globe view
@@ -137,6 +143,8 @@ let globe = null;     // base surface: the whole Earth, or Thailand in /thai
 let patch = null;     // high-detail surface around the view, or null
 let patchTiles = null;
 let plates = null;
+let borders = null;   // draped country boundary lines
+let countries = null; // [{ name, nameEn, lines, bbox }]
 let provinces = null; // { lines, highlight, features, labels }
 let tambons = null;   // Map pro_code → [{ name, amp, lines, bbox }]
 let tambonLines = null; // draped tambon boundaries of the province in view
@@ -274,6 +282,40 @@ async function loadPlates() {
     console.warn('plate boundaries unavailable', e);
     $('plates').disabled = true;
   }
+}
+
+async function loadBorders() {
+  try {
+    const json = await (await fetch(BORDERS_URL)).json();
+    borders = createDrapedLines(json.features.flatMap((f) => geojsonLines(f.geometry)), {
+      color: '#f5f7fb', opacity: 0.9, maxStepDeg: 0.2, bias: 0.0015,
+    });
+    scene.add(borders.object);
+    refreshLines();
+  } catch (e) {
+    console.warn('country borders unavailable', e);
+  }
+}
+
+async function loadCountries() {
+  try {
+    const [json, th] = await Promise.all([
+      fetch(COUNTRIES_URL).then((r) => r.json()),
+      fetch(COUNTRY_TH_URL).then((r) => r.json()).catch(() => ({ names: {} })),
+    ]);
+    countries = json.features.map((f) => {
+      const lines = geojsonLines(f.geometry);
+      const p = f.properties;
+      return { name: th.names[p.ADM0_A3] ?? p.NAME, nameEn: p.NAME_EN ?? p.NAME, lines, bbox: bbox({ lines }) };
+    });
+  } catch (e) {
+    console.warn('countries unavailable', e);
+  }
+}
+
+function countryAt(lat, lon) {
+  return countries?.find((c) => lat >= c.bbox.latMin && lat <= c.bbox.latMax &&
+    lon >= c.bbox.lonMin && lon <= c.bbox.lonMax && inRings(c.lines, lat, lon)) ?? null;
 }
 
 async function loadProvinces() {
@@ -667,6 +709,10 @@ function refreshLines() {
   if (plates) {
     plates.object.visible = state.plates;
     if (state.plates) plates.update(surfaceHeight, s);
+  }
+  if (borders) {
+    borders.object.visible = state.borders;
+    if (state.borders) borders.update(surfaceHeight, s);
   }
   if (provinces) {
     provinces.lines.object.visible = state.provinces;
@@ -1274,7 +1320,10 @@ function pick(clientX, clientY) {
   if (!ll) return null;
   const grid = patch && contains(patch.grid, ll.lat, ll.lon) ? patch.grid : globe.grid;
   const province = provinceAt(ll.lat, ll.lon);
-  return { ...ll, h: heightAt(grid, ll.lat, ll.lon), province, tambon: tambonAt(province, ll.lat, ll.lon) };
+  return {
+    ...ll, h: heightAt(grid, ll.lat, ll.lon), province, tambon: tambonAt(province, ll.lat, ll.lon),
+    country: province || THAI_MODE ? null : countryAt(ll.lat, ll.lon),
+  };
 }
 
 function provinceAt(lat, lon) {
@@ -1321,7 +1370,7 @@ function showReadout(p) {
   const ew = p.lon >= 0 ? 'E' : 'W';
   const coord = `${Math.abs(p.lat).toFixed(3)}°${ns} ${Math.abs(p.lon).toFixed(3)}°${ew}`;
   const below = state.water ? state.sea - p.h : -p.h;
-  const place = placeName(p.province, p.tambon) || (below > 0 ? t('hud.underwater') : '—');
+  const place = placeName(p.province, p.tambon) || (p.country && nm(p.country)) || (below > 0 ? t('hud.underwater') : '—');
   $('hud-place').textContent = place;
   $('hud-coord').textContent = coord;
   $('hud-h').textContent = fmtH(p.h);
@@ -1502,7 +1551,7 @@ if (THAI_MODE) {
     .then(() => Promise.all([loadThailand(9), loadSubdistricts()]));
 } else {
   loadQuality(state.quality)
-    .then(() => Promise.all([loadPlates(), loadProvinces(), loadWorldPois()]))
+    .then(() => Promise.all([loadPlates(), loadBorders(), loadCountries(), loadProvinces(), loadWorldPois()]))
     .then(loadSubdistricts)
     .then(prefetchThailand);
 }

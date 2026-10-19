@@ -476,6 +476,7 @@
       <li><span data-i18n="info.elevation">ความสูง</span>: <a href="https://registry.opendata.aws/terrain-tiles" target="_blank" rel="noopener">AWS Terrain Tiles</a> (SRTM, GMTED, ETOPO1)</li>
       <li><span data-i18n="info.admin">เขตการปกครอง</span>: <a href="https://github.com/chingchai/OpenGISData-Thailand" target="_blank" rel="noopener">OpenGISData-Thailand</a> <span data-i18n="info.adminNote">(CC BY 4.0, กรมการปกครอง)</span></li>
       <li><span data-i18n="info.peaks">ชื่อยอดเขา</span>: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors (ODbL) · <span data-i18n="info.wiki">ภาพและคำอธิบาย 10 อันดับ</span>: <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a> / Wikipedia (CC BY-SA)</li>
+      <li data-world-only><span data-i18n="info.borders">เส้นแบ่งประเทศ</span>: <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a> · <span data-i18n="info.countryTh">ชื่อประเทศภาษาไทย</span>: <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a></li>
       <li data-world-only><span data-i18n="info.plates">รอยต่อแผ่นเปลือกโลก</span>: <a href="https://github.com/fraxen/tectonicplates" target="_blank" rel="noopener">PB2002, Bird 2003</a></li>
     </ul>
     <p id="stats"></p>
@@ -535,6 +536,7 @@
       <label class="check"><span><span class="swatch" style="background:rgba(255,255,255,0.45)"></span><span data-i18n="layers.tambons">เขตตำบล (มุมมองจังหวัด)</span></span><input type="checkbox" data-bind="tambonLines" /></label>
       <label class="check"><span data-i18n="layers.labels">ชื่อจังหวัด</span> <input type="checkbox" data-bind="labels" /></label>
       <label class="check"><span data-i18n="layers.pins">หมุดสูงสุด–ต่ำสุด</span> <input type="checkbox" data-bind="pins" /></label>
+      <label class="check" data-world-only><span><span class="swatch" style="background:#e8edf7;opacity:.7"></span><span data-i18n="layers.borders">เส้นแบ่งประเทศ</span></span><input type="checkbox" data-bind="borders" /></label>
       <label class="check" data-world-only><span><span class="swatch" style="background:#ff5a36"></span><span data-i18n="layers.plates">รอยต่อแผ่นเปลือกโลก</span></span><input type="checkbox" data-bind="plates" id="plates" /></label>
       <label class="check" data-world-only><span><span class="swatch" style="background:linear-gradient(90deg,#ff8a70 50%,#b79cff 50%)"></span><span data-i18n="layers.worldPois">10 อันดับสูงสุด/ลึกสุดของโลก</span></span><input type="checkbox" data-bind="worldPois" /></label>
     </div>
