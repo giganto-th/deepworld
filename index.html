@@ -82,6 +82,35 @@
       font-size: 12px; font-weight: 500; color: #fff;
       text-shadow: 0 0 3px #000, 0 0 6px #000;
     }
+    /* Province 3D view card (top center) and pin labels */
+    #pcard {
+      position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 2;
+      width: min(440px, calc(100% - 32px));
+      background: var(--panel); backdrop-filter: blur(10px);
+      border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+    }
+    #pcard[hidden] { display: none; }
+    #pcard .head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+    #pc-name { font-size: 17px; font-weight: 600; }
+    #pc-sub, #pc-res, #pcard .hint { color: var(--muted); font-size: 11.5px; }
+    #pc-close {
+      flex: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12.5px;
+      background: rgba(90, 169, 255, 0.12); color: var(--text); border: 1px solid var(--border);
+    }
+    #pcard .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 6px; }
+    #pcard .stat b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+    #pcard .stat span { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+    #pcard .stat.hi { color: #ff7a7a; }
+    #pcard .stat.lo { color: #6cb6ff; }
+    #pins { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+    .pin-label {
+      position: absolute; left: 0; top: 0; white-space: nowrap; text-align: center;
+      padding: 4px 8px; border-radius: 8px; font-size: 11.5px; color: #fff;
+      background: rgba(10, 14, 24, 0.85); border: 1px solid currentColor;
+    }
+    .pin-label b { display: block; font-size: 13px; color: #fff; }
+    .pin-label.hi { color: #ff6b6b; }
+    .pin-label.lo { color: #4da3ff; }
     #readout-place { font-weight: 600; }
 
     /* Bottom-right: cursor readout + vertical elevation scale (max on top, min at bottom). */
@@ -92,6 +121,35 @@
     }
     #scale .text { width: 150px; display: flex; flex-direction: column; }
     #scale .title { color: var(--muted); font-size: 11.5px; }
+    /* Province 3D view card (top center) and pin labels */
+    #pcard {
+      position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 2;
+      width: min(440px, calc(100% - 32px));
+      background: var(--panel); backdrop-filter: blur(10px);
+      border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+    }
+    #pcard[hidden] { display: none; }
+    #pcard .head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+    #pc-name { font-size: 17px; font-weight: 600; }
+    #pc-sub, #pc-res, #pcard .hint { color: var(--muted); font-size: 11.5px; }
+    #pc-close {
+      flex: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font: inherit; font-size: 12.5px;
+      background: rgba(90, 169, 255, 0.12); color: var(--text); border: 1px solid var(--border);
+    }
+    #pcard .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 6px; }
+    #pcard .stat b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+    #pcard .stat span { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+    #pcard .stat.hi { color: #ff7a7a; }
+    #pcard .stat.lo { color: #6cb6ff; }
+    #pins { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+    .pin-label {
+      position: absolute; left: 0; top: 0; white-space: nowrap; text-align: center;
+      padding: 4px 8px; border-radius: 8px; font-size: 11.5px; color: #fff;
+      background: rgba(10, 14, 24, 0.85); border: 1px solid currentColor;
+    }
+    .pin-label b { display: block; font-size: 13px; color: #fff; }
+    .pin-label.hi { color: #ff6b6b; }
+    .pin-label.lo { color: #4da3ff; }
     #readout-place { font-weight: 600; min-height: 1.5em; margin-top: 4px; }
     #readout-coord { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
     #readout-h { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--cursor); }
@@ -199,6 +257,23 @@
   </aside>
 
   <div id="labels" hidden></div>
+  <div id="pins"></div>
+
+  <div id="pcard" hidden>
+    <div class="head">
+      <div>
+        <div id="pc-name"></div>
+        <div id="pc-sub"></div>
+      </div>
+      <button id="pc-close">กลับสู่ลูกโลก ✕</button>
+    </div>
+    <div class="stats">
+      <div class="stat hi">▲ จุดสูงสุด<b id="pc-max"></b><span id="pc-max-at"></span></div>
+      <div class="stat lo">▼ จุดต่ำสุด (บนบก)<b id="pc-min"></b><span id="pc-min-at"></span></div>
+    </div>
+    <div id="pc-res"></div>
+    <div class="hint">ลากเพื่อหมุน · คลิกขวาลากเพื่อเลื่อน · คลิกจังหวัดอื่นเพื่อเปลี่ยน · Esc เพื่อออก</div>
+  </div>
 
   <div id="scale">
     <div class="text">

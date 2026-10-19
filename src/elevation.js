@@ -45,16 +45,35 @@ export const latToTileY = (lat, z) => {
   return ((1 - Math.log(Math.tan(Math.PI / 4 + phi / 2)) / Math.PI) / 2) * 2 ** z;
 };
 
+// A single 256×256 canvas is reused to decode every tile, so large regions never need
+// one huge canvas (browsers cap canvas area, e.g. ~16.7 Mpx in Safari).
+let decodeCtx = null;
+function decodeInto(img, data, width, ox, oy) {
+  if (!decodeCtx) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 256;
+    decodeCtx = c.getContext('2d', { willReadFrequently: true });
+  }
+  decodeCtx.clearRect(0, 0, 256, 256);
+  decodeCtx.drawImage(img, 0, 0);
+  const px = decodeCtx.getImageData(0, 0, 256, 256).data;
+  for (let y = 0; y < 256; y++) {
+    let i = (oy + y) * width + ox;
+    for (let x = 0, j = y * 1024; x < 256; x++, i++, j += 4) {
+      const h = px[j] * 256 + px[j + 1] + px[j + 2] / 256 - 32768;
+      // Clamp known spike artifacts to Earth's physical range (Challenger Deep … Everest).
+      data[i] = h < -11000 ? -11000 : h > 8850 ? 8850 : h;
+    }
+  }
+}
+
 // Loads tiles [x0, x0+nx) × [y0, y0+ny) at zoom z into one Web Mercator raster (row 0 = north).
 // x wraps around the antimeridian; y must be inside [0, 2^z).
 export async function loadMercatorRegion(z, x0, y0, nx, ny, { onProgress = () => {}, isStale = () => false } = {}) {
   const n = 2 ** z;
   const width = 256 * nx;
   const height = 256 * ny;
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const data = new Float32Array(width * height); // failed tiles stay at 0 m
 
   const jobs = [];
   for (let y = 0; y < ny; y++) for (let x = 0; x < nx; x++) jobs.push([x, y]);
@@ -66,25 +85,15 @@ export async function loadMercatorRegion(z, x0, y0, nx, ny, { onProgress = () =>
       const [x, y] = jobs.shift();
       try {
         const img = await loadTile(z, (((x0 + x) % n) + n) % n, y0 + y);
-        ctx.drawImage(img, x * 256, y * 256);
+        decodeInto(img, data, width, x * 256, y * 256);
       } catch {
         failed++;
-        ctx.fillStyle = 'rgb(128,0,0)'; // decodes to 0 m
-        ctx.fillRect(x * 256, y * 256, 256, 256);
       }
-      onProgress(++done / total);
+      onProgress(++done / total, done, total);
     }
   };
   await Promise.all(Array.from({ length: 16 }, worker));
   if (isStale()) return null;
-
-  const px = ctx.getImageData(0, 0, width, height).data;
-  const data = new Float32Array(width * height);
-  for (let i = 0, j = 0; i < data.length; i++, j += 4) {
-    const h = px[j] * 256 + px[j + 1] + px[j + 2] / 256 - 32768;
-    // Clamp known spike artifacts to Earth's physical range (Challenger Deep … Everest).
-    data[i] = Math.max(-11000, Math.min(8850, h));
-  }
   return { z, x0, y0, nx, ny, width, height, data, failed };
 }
 

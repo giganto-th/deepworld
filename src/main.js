@@ -6,8 +6,9 @@ import {
 } from './elevation.js';
 import {
   EARTH_RADIUS, RAMP_MIN, RAMP_MAX, RAMP_STOPS,
-  createSurface, createDrapedLines, geojsonLines, latLonToVec3, vec3ToLatLon,
+  createSurface, createDrapedLines, createStarfield, geojsonLines, latLonToVec3, vec3ToLatLon,
 } from './globe.js';
+import { bbox, extremes, createPin } from './province.js';
 
 const PLATES_URL =
   'https://cdn.jsdelivr.net/gh/fraxen/tectonicplates@master/GeoJSON/PB2002_boundaries.json';
@@ -33,7 +34,13 @@ const PLACES = {
 // Detail patches: below this altitude (in Earth radii) finer tiles are streamed in.
 const DETAIL_MAX_ALT = 0.5;
 const DETAIL_MAX_TILES = 144;
-const LABEL_MAX_ALT = 0.3;
+// The province view loads one larger patch covering the whole province. 240 tiles keeps the
+// grid under ~16 Mpx (the province mask canvas must fit browser canvas-area limits).
+const PROVINCE_MAX_TILES = 240;
+const LABEL_MAX_ALT = 0.2;
+// Province 3D view: exaggeration used on entry and camera tilt from vertical.
+const PROVINCE_EXAG = 4;
+const PROVINCE_TILT = 52 * (Math.PI / 180);
 
 const $ = (id) => document.getElementById(id);
 const d2r = Math.PI / 180;
@@ -50,16 +57,43 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.001, 100);
 camera.position.copy(latLonToVec3(HOME.lat, HOME.lon, HOME.dist));
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.enablePan = false;
-controls.minDistance = 1.004;
-controls.maxDistance = 8;
-controls.addEventListener('start', () => { flight = null; });
+const ORIGIN = new THREE.Vector3();
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
+let controls = null;
+
+// OrbitControls fixes its "up" when created, so switching between the globe view
+// (orbit the Earth's center) and a province view (orbit a ground point, tilted)
+// recreates it.
+function makeControls(target, up, provinceMode) {
+  controls?.dispose();
+  camera.up.copy(up);
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.copy(target);
+  controls.enableDamping = true;
+  if (provinceMode) {
+    controls.enablePan = true;
+    controls.screenSpacePanning = false; // pan along the ground
+    controls.minDistance = 0.001;
+    controls.maxDistance = 0.35;
+    controls.maxPolarAngle = 82 * d2r;
+    controls.rotateSpeed = 0.5;
+  } else {
+    controls.enablePan = false;
+    controls.minDistance = 1.004;
+    controls.maxDistance = 8;
+  }
+  controls.addEventListener('start', () => { flight = null; });
+  controls.update();
+}
+makeControls(ORIGIN, WORLD_UP, false);
+
+renderer.setClearColor(0x010208);
+const stars = createStarfield();
+scene.add(stars.object);
 
 const state = {
-  exaggeration: 20,
-  relief: 8,
+  exaggeration: 50,
+  relief: 20,
   water: false,
   sea: 0,
   plates: true,
@@ -73,6 +107,7 @@ let patchTiles = null;
 let plates = null;
 let provinces = null; // { lines, highlight, features, labels }
 let flight = null;
+let view = null;      // province 3D view: { f, target, up, prevExag, stemLen, pins }
 let loadId = 0;
 let detailId = 0;
 
@@ -160,24 +195,173 @@ async function loadProvinces() {
   }
 }
 
-function selectProvince(i) {
-  if (!provinces) return;
+function setHighlight(f) {
   if (provinces.highlight) {
     scene.remove(provinces.highlight.object);
     provinces.highlight.dispose();
     provinces.highlight = null;
   }
-  const f = provinces.features[i];
   if (!f) return;
   provinces.highlight = createDrapedLines(f.lines, {
     color: '#ffd34d', opacity: 1, maxStepDeg: 0.01, bias: 0.004,
   });
+  provinces.highlight.object.renderOrder = 2; // draw over the other province lines
   scene.add(provinces.highlight.object);
   refreshLines();
-  // Frame the province: its rough extent should fill most of the view.
-  const extent = (Math.sqrt(f.area) * 1.8 * 1000) / EARTH_RADIUS;
-  flyTo({ lat: f.lat, lon: f.lon, dist: 1 + extent / (2 * Math.tan((camera.fov / 2) * d2r)) });
+}
+
+function setExaggeration(v) {
+  $('exag').value = v;
+  $('exag').dispatchEvent(new Event('input'));
+}
+
+// Fly into a tilted 3D view of one province, stream its terrain and pin its extremes.
+async function enterProvince(i) {
+  const f = provinces?.features[i];
+  if (!f) return;
+  const prevExag = view ? view.prevExag : state.exaggeration;
+  clearPins();
+  setHighlight(f);
+  if (!view) setExaggeration(PROVINCE_EXAG);
+  $('province').value = String(i);
   $('province-info').textContent = `${f.name} (${f.nameEn}) · ${fmt(f.area)} ตร.กม.`;
+
+  const b = bbox(f);
+  const lat = (b.latMin + b.latMax) / 2;
+  const lon = (b.lonMin + b.lonMax) / 2;
+  const up = latLonToVec3(lat, lon);
+  const north = new THREE.Vector3(-Math.sin(lat * d2r) * Math.sin(lon * d2r), Math.cos(lat * d2r), -Math.sin(lat * d2r) * Math.cos(lon * d2r));
+  const extent = Math.max(b.latMax - b.latMin, (b.lonMax - b.lonMin) * Math.cos(lat * d2r)) * d2r; // radians ≈ R units
+  const target = up.clone().multiplyScalar(1 + Math.max(0, surfaceHeight(lat, lon)) * scale());
+  const dist = (extent * 1.15) / (2 * Math.tan((camera.fov / 2) * d2r)) + 0.004;
+  const pos = target.clone()
+    .addScaledVector(up, dist * Math.cos(PROVINCE_TILT))
+    .addScaledVector(north, -dist * Math.sin(PROVINCE_TILT));
+
+  view = { f, target, up, prevExag, stemLen: extent * 0.07, pins: null };
+  showProvinceCard(f);
+  flyCamera({ pos, target, up, onDone: () => makeControls(target, up, true) });
+
+  await loadProvinceDetail(b);
+  if (view?.f !== f) return; // user moved on meanwhile
+  buildPins(f);
+}
+
+function exitProvince({ fly = true } = {}) {
+  if (!view) return;
+  const { lat, lon } = vec3ToLatLon(view.target);
+  const prevExag = view.prevExag;
+  clearPins();
+  setHighlight(null);
+  view = null;
+  setExaggeration(prevExag);
+  $('pcard').hidden = true;
+  $('province').value = '';
+  $('province-info').textContent = '';
+  if (fly) {
+    flyCamera({
+      pos: latLonToVec3(lat, lon, 1.3), target: ORIGIN, up: WORLD_UP,
+      onDone: () => makeControls(ORIGIN, WORLD_UP, false),
+    });
+  } else {
+    flight = null;
+    makeControls(ORIGIN, WORLD_UP, false);
+  }
+}
+
+// Detail patch covering the whole province at the finest zoom that fits the tile budget.
+async function loadProvinceDetail(b) {
+  const padLat = (b.latMax - b.latMin) * 0.06;
+  const padLon = (b.lonMax - b.lonMin) * 0.06;
+  const maxDim = Math.min(renderer.capabilities.maxTextureSize, 8192);
+  for (let z = MAX_ZOOM; z >= 5; z--) {
+    const x0 = Math.floor(lonToTileX(b.lonMin - padLon, z));
+    const x1 = Math.floor(lonToTileX(b.lonMax + padLon, z));
+    const y0 = Math.floor(latToTileY(b.latMax + padLat, z));
+    const y1 = Math.floor(latToTileY(b.latMin - padLat, z));
+    const t = { z, x0, y0, nx: x1 - x0 + 1, ny: y1 - y0 + 1 };
+    if (t.nx * t.ny > PROVINCE_MAX_TILES || t.nx * 256 > maxDim || t.ny * 256 > maxDim) continue;
+    if (covers(patchTiles, t)) return;
+    $('pc-res').textContent = `กำลังโหลดข้อมูลความสูงละเอียด z${t.z} (0/${t.nx * t.ny} tiles)…`;
+    await loadPatch(t, {
+      maxDim,
+      segments: 640,
+      onProgress: (done, total) => {
+        if (view) $('pc-res').textContent = `กำลังโหลดข้อมูลความสูงละเอียด z${t.z} (${done}/${total} tiles)…`;
+      },
+    });
+    return;
+  }
+}
+
+function buildPins(f) {
+  const grid = patch && contains(patch.grid, f.lat, f.lon) ? patch.grid : globe.grid;
+  const ex = extremes(f, grid);
+  if (!ex) return;
+  const make = (pt, color, cls, text) => {
+    const pin = createPin(color);
+    scene.add(pin.group);
+    const el = document.createElement('div');
+    el.className = `pin-label ${cls}`;
+    el.innerHTML = `${text}<b>${pt.h >= 0 ? '+' : ''}${fmt(pt.h)} ม.</b>`;
+    $('pins').appendChild(el);
+    return { pin, el, pt };
+  };
+  view.pins = [
+    make(ex.max, 0xff4d4d, 'hi', '▲ สูงสุด'),
+    make(ex.min, 0x3d9bff, 'lo', '▼ ต่ำสุด'),
+  ];
+  placePins();
+  const where = (pt) => `${pt.lat.toFixed(3)}°N ${pt.lon.toFixed(3)}°E`;
+  $('pc-max').textContent = `${fmt(ex.max.h)} ม.`;
+  $('pc-max-at').textContent = where(ex.max);
+  $('pc-min').textContent = `${fmt(ex.min.h)} ม.`;
+  $('pc-min-at').textContent = where(ex.min);
+  const lat = (grid.latMin + grid.latMax) / 2;
+  $('pc-res').textContent = `คำนวณจากข้อมูลความละเอียด ~${fmt(((grid.lonMax - grid.lonMin) / grid.width) * d2r * EARTH_RADIUS * Math.cos(lat * d2r))} ม./พิกเซล`;
+}
+
+function placePins() {
+  if (!view?.pins) return;
+  for (const { pin, pt } of view.pins) {
+    const up = latLonToVec3(pt.lat, pt.lon);
+    const base = up.clone().multiplyScalar(1 + surfaceHeight(pt.lat, pt.lon) * scale());
+    pin.place(base, up, view.stemLen);
+  }
+}
+
+function clearPins() {
+  if (!view?.pins) return;
+  for (const { pin, el } of view.pins) {
+    scene.remove(pin.group);
+    pin.dispose();
+    el.remove();
+  }
+  view.pins = null;
+}
+
+function showProvinceCard(f) {
+  $('pcard').hidden = false;
+  $('pc-name').textContent = `จ.${f.name}`;
+  $('pc-sub').textContent = `${f.nameEn} · ${fmt(f.area)} ตร.กม.`;
+  for (const id of ['pc-max', 'pc-min']) $(id).textContent = 'กำลังคำนวณ…';
+  for (const id of ['pc-max-at', 'pc-min-at', 'pc-res']) $(id).textContent = '';
+}
+
+const pinProj = new THREE.Vector3();
+function updatePins() {
+  if (!view?.pins) return;
+  for (const { pin, el } of view.pins) {
+    pin.resize(camera);
+    pinProj.copy(pin.top).project(camera);
+    const visible = pinProj.z < 1 && Math.abs(pinProj.x) < 1.1 && Math.abs(pinProj.y) < 1.1;
+    el.style.display = visible ? '' : 'none';
+    if (visible) {
+      const x = (pinProj.x * 0.5 + 0.5) * innerWidth;
+      const y = (-pinProj.y * 0.5 + 0.5) * innerHeight;
+      el.style.transform = `translate(${x}px, ${y}px) translate(-50%, calc(-100% - 12px))`;
+    }
+  }
 }
 
 // Re-drape vector layers after heights change (exaggeration, water, new detail patch).
@@ -199,6 +383,7 @@ function refreshLines() {
       }
     }
   }
+  placePins();
 }
 
 function applyState() {
@@ -249,18 +434,27 @@ function wantedTiles() {
 const covers = (a, b) =>
   a && a.z === b.z && b.x0 >= a.x0 && b.x0 + b.nx <= a.x0 + a.nx && b.y0 >= a.y0 && b.y0 + b.ny <= a.y0 + a.ny;
 
-async function loadPatch(t) {
+async function loadPatch(t, { maxDim = 3072, segments = 320, onProgress = () => {} } = {}) {
   const id = ++detailId;
   setDetailStatus(`กำลังโหลดรายละเอียด z${t.z} (${t.nx * t.ny} tiles)…`);
-  const merc = await loadMercatorRegion(t.z, t.x0, t.y0, t.nx, t.ny, { isStale: () => id !== detailId });
+  const merc = await loadMercatorRegion(t.z, t.x0, t.y0, t.nx, t.ny, {
+    isStale: () => id !== detailId,
+    onProgress: (p, done, total) => {
+      if (id !== detailId) return;
+      setDetailStatus(`กำลังโหลดรายละเอียด z${t.z} (${done}/${total} tiles)…`);
+      onProgress(done, total);
+    },
+  });
   if (!merc || id !== detailId) return;
+  await new Promise(requestAnimationFrame); // let the status text paint before heavy work
   const bounds = {
     lonMin: tileLon(t.x0, t.z), lonMax: tileLon(t.x0 + t.nx, t.z),
     latMax: tileLat(t.y0, t.z), latMin: tileLat(t.y0 + t.ny, t.z),
   };
-  const grid = reproject(merc, Math.min(merc.width, 3072), Math.min(merc.height, 3072), bounds);
+  const grid = reproject(merc, Math.min(merc.width, maxDim), Math.min(merc.height, maxDim), bounds);
+  if (t.z >= 10) patchSeaFromGlobe(grid);
   if (id !== detailId) return;
-  const next = createSurface(grid, { segments: 320 });
+  const next = createSurface(grid, { segments });
   if (patch) { scene.remove(patch.mesh); patch.dispose(); }
   patch = next;
   patchTiles = t;
@@ -268,6 +462,28 @@ async function loadPatch(t) {
   globe.setHole(patch);
   applyState();
   setDetailStatus();
+}
+
+// Fine Terrain Tiles (z10+) carry no bathymetry: the sea is exactly 0 m, and some coasts
+// have void pits hundreds of meters deep. Fill both from the coarse global grid (ETOPO).
+function patchSeaFromGlobe(grid) {
+  const { width: W, height: H, data } = grid;
+  for (let j = 0; j < H; j++) {
+    const lat = grid.latMin + ((j + 0.5) / H) * (grid.latMax - grid.latMin);
+    for (let i = 0; i < W; i++) {
+      const k = j * W + i;
+      const h = data[k];
+      if (h !== 0 && h > -100) continue;
+      const lon = grid.lonMin + ((i + 0.5) / W) * (grid.lonMax - grid.lonMin);
+      const g = heightAt(globe.grid, lat, lon);
+      if (h === 0 ? g < -5 : g > -100) data[k] = h === 0 ? g : Math.max(g, 0);
+    }
+  }
+  let min = Infinity;
+  let max = -Infinity;
+  for (const v of data) { if (v < min) min = v; if (v > max) max = v; }
+  grid.min = min;
+  grid.max = max;
 }
 
 function setDetailStatus(loading) {
@@ -283,6 +499,7 @@ function setDetailStatus(loading) {
 let lastCheck = 0;
 const lastCam = new THREE.Vector3();
 function updateDetail(now) {
+  if (view) return; // the province view manages its own patch
   if (now - lastCheck < 300) return;
   lastCheck = now;
   const moving = lastCam.distanceTo(camera.position) > (camera.position.length() - 1) * 0.02;
@@ -325,12 +542,20 @@ $('plates').checked = state.plates;
 $('plates').addEventListener('change', (e) => { state.plates = e.target.checked; applyState(); });
 $('provinces').checked = state.provinces;
 $('provinces').addEventListener('change', (e) => { state.provinces = e.target.checked; applyState(); });
-$('province').addEventListener('change', (e) => selectProvince(Number(e.target.value)));
+$('province').addEventListener('change', (e) => {
+  if (e.target.value === '') exitProvince();
+  else enterProvince(Number(e.target.value));
+});
+$('pc-close').addEventListener('click', () => exitProvince());
+addEventListener('keydown', (e) => { if (e.key === 'Escape') exitProvince(); });
 $('quality').value = state.quality;
 $('quality').addEventListener('change', (e) => { state.quality = e.target.value; loadQuality(state.quality); });
 
 document.querySelectorAll('[data-place]').forEach((btn) =>
-  btn.addEventListener('click', () => flyTo(PLACES[btn.dataset.place])),
+  btn.addEventListener('click', () => {
+    exitProvince({ fly: false });
+    flyTo(PLACES[btn.dataset.place]);
+  }),
 );
 
 // ---------- elevation scale (bottom right) ----------
@@ -424,8 +649,18 @@ renderer.domElement.addEventListener('pointermove', (e) => {
   if (e.pointerType === 'mouse') showReadout(pick(e.clientX, e.clientY));
 });
 renderer.domElement.addEventListener('pointerleave', () => showReadout(null));
+let pressed = null;
 renderer.domElement.addEventListener('pointerdown', (e) => {
+  pressed = { x: e.clientX, y: e.clientY, t: performance.now() };
   if (e.pointerType !== 'mouse') showReadout(pick(e.clientX, e.clientY));
+});
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (!pressed || e.button !== 0) return;
+  const click = Math.hypot(e.clientX - pressed.x, e.clientY - pressed.y) < 5 && performance.now() - pressed.t < 500;
+  pressed = null;
+  if (!click) return;
+  const p = pick(e.clientX, e.clientY);
+  if (p?.province && p.province !== view?.f) enterProvince(provinces.features.indexOf(p.province));
 });
 
 // ---------- fly-to ----------
@@ -438,8 +673,32 @@ function flyTo({ lat, lon, dist }) {
   flight = { from, q, d0: from.length(), d1: dist, lift: Math.min(0.6, angle * 0.5), t0: performance.now(), dur: 1800 };
 }
 
+// Move the camera to `pos`, looking at `target`, easing "up" so the view does not snap.
+function flyCamera({ pos, target, up, onDone }) {
+  controls.enabled = false;
+  flight = {
+    kind: 'look', p0: camera.position.clone(), p1: pos.clone(),
+    a0: controls.target.clone(), a1: target.clone(), u0: camera.up.clone(), u1: up.clone(),
+    t0: performance.now(), dur: reducedMotion ? 0 : 1800, onDone,
+  };
+}
+
+const look = new THREE.Vector3();
 function stepFlight(now) {
   if (!flight) return;
+  if (flight.kind === 'look') {
+    const t = flight.dur ? Math.min(1, (now - flight.t0) / flight.dur) : 1;
+    const e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+    camera.position.lerpVectors(flight.p0, flight.p1, e);
+    camera.up.lerpVectors(flight.u0, flight.u1, e).normalize();
+    camera.lookAt(look.lerpVectors(flight.a0, flight.a1, e));
+    if (t >= 1) {
+      const done = flight.onDone;
+      flight = null;
+      done?.();
+    }
+    return;
+  }
   const t = Math.min(1, (now - flight.t0) / flight.dur);
   const e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
   const q = new THREE.Quaternion().slerp(flight.q, e);
@@ -476,16 +735,20 @@ function frame(now) {
   stepFlight(now);
   const dist = camera.position.length();
   const alt = dist - 1;
-  controls.rotateSpeed = THREE.MathUtils.clamp(alt * 0.6, 0.01, 1);
-  controls.zoomSpeed = THREE.MathUtils.clamp(alt * 2, 0.4, 1);
-  if (globe) {
+  if (!view) {
+    controls.rotateSpeed = THREE.MathUtils.clamp(alt * 0.6, 0.01, 1);
+    controls.zoomSpeed = THREE.MathUtils.clamp(alt * 2, 0.4, 1);
+  }
+  if (globe && !view) {
     // Keep the camera above the (exaggerated) ground beneath it.
     const { lat, lon } = vec3ToLatLon(camera.position);
     controls.minDistance = 1 + Math.max(0, surfaceHeight(lat, lon)) * scale() + 0.003;
   }
-  controls.update();
-  camera.near = Math.max(alt * 0.05, 1e-5);
+  if (flight?.kind !== 'look') controls.update();
+  const nearRef = view ? Math.min(alt, camera.position.distanceTo(controls.target)) : alt;
+  camera.near = Math.max(nearRef * 0.02, 1e-6);
   camera.far = dist + 2;
+  stars.follow(camera);
   camera.updateProjectionMatrix();
 
   if (globe) {
@@ -499,6 +762,7 @@ function frame(now) {
     updateDetail(now);
   }
   updateLabels();
+  updatePins();
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }

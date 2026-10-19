@@ -29,7 +29,7 @@ export const RAMP_STOPS = [
 ];
 
 function buildRampTexture() {
-  const N = 1024;
+  const N = 8192; // ~2.4 m per texel, so the sea-level color break stays sharp
   const px = new Uint8Array(N * 4);
   const stops = RAMP_STOPS.map(([h, c]) => [h, new THREE.Color(c)]);
   const tmp = new THREE.Color();
@@ -140,6 +140,8 @@ const fragmentShader = /* glsl */ `
       color = texture2D(uRamp, vec2(clamp((d - uRampMin) / (uRampMax - uRampMin), 0.0, 1.0), 0.5)).rgb;
     } else {
       float hc = uWater ? max(h, 0.0) : h;
+      // Keep samples a texel away from 0 m so linear filtering never blends sea blue into land green.
+      hc = hc < 0.0 ? min(hc, -3.0) : max(hc, 3.0);
       float t = clamp((hc - uRampMin) / (uRampMax - uRampMin), 0.0, 1.0);
       color = texture2D(uRamp, vec2(t, 0.5)).rgb;
     }
@@ -314,4 +316,69 @@ export function geojsonLines(geometry) {
     case 'MultiPolygon': return geometry.coordinates.flat();
     default: return [];
   }
+}
+
+// Space backdrop: a unit sphere of stars that is re-centred on the camera every frame
+// (scaled to sit just beyond the globe), with a denser, dimmer Milky Way band.
+export function createStarfield(count = 9000) {
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+  const tint = [new THREE.Color('#9bb0ff'), new THREE.Color('#cad7ff'), new THREE.Color('#fff4ea'), new THREE.Color('#ffd2a1'), new THREE.Color('#ffb46b')];
+  const band = new THREE.Quaternion().setFromEuler(new THREE.Euler(1.05, 0.3, 0.4)); // tilt of the galactic plane
+  const v = new THREE.Vector3();
+  let seed = 7;
+  const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < count; i++) {
+    const inBand = i < count * 0.35;
+    const lon = rand() * Math.PI * 2;
+    // Band stars cluster around the galactic equator (roughly Gaussian latitude).
+    const lat = inBand ? (rand() + rand() + rand() - 1.5) * 0.18 : Math.asin(rand() * 2 - 1);
+    v.set(Math.cos(lat) * Math.cos(lon), Math.sin(lat), Math.cos(lat) * Math.sin(lon)).applyQuaternion(band);
+    positions.set([v.x, v.y, v.z], i * 3);
+    const bright = inBand ? 0.45 + rand() * 0.45 : 0.6 + rand() ** 2 * 0.6;
+    const c = tint[Math.floor(rand() * tint.length)].clone().multiplyScalar(bright);
+    colors.set([c.r, c.g, c.b], i * 3);
+    sizes[i] = rand() < 0.02 ? 3.2 + rand() * 1.8 : 1.3 + rand() * 1.4;
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+  const material = new THREE.ShaderMaterial({
+    uniforms: { uPixelRatio: { value: Math.min(devicePixelRatio, 2) } },
+    vertexShader: /* glsl */ `
+      attribute float size;
+      attribute vec3 color;
+      uniform float uPixelRatio;
+      varying vec3 vColor;
+      void main() {
+        vColor = color;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = size * uPixelRatio;
+      }
+    `,
+    fragmentShader: /* glsl */ `
+      varying vec3 vColor;
+      void main() {
+        float d = length(gl_PointCoord - 0.5);
+        float a = smoothstep(0.5, 0.0, d);
+        gl_FragColor = vec4(vColor * a, 1.0);
+      }
+    `,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    transparent: true,
+  });
+  const points = new THREE.Points(geometry, material);
+  points.frustumCulled = false;
+  points.renderOrder = -1;
+  return {
+    object: points,
+    // Keep the shell centred on the camera and just outside the far side of the globe.
+    follow(camera) {
+      points.position.copy(camera.position);
+      points.scale.setScalar(camera.position.length() + 1.4);
+    },
+  };
 }
