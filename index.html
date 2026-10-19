@@ -36,6 +36,7 @@
   <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet" />
   <script type="importmap">
@@ -365,6 +366,43 @@
     .poi-actions button { min-width: 40px; }
     .place-list .rank { font-family: var(--mono); color: var(--muted); margin-right: 8px; }
 
+    /* ---------- 2D map ---------- */
+    .minimap {
+      position: fixed; left: 16px; bottom: 76px; z-index: 3; width: 300px; height: 210px;
+      border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; padding: 0;
+    }
+    body.province .minimap:not(.expanded) { left: auto; right: 16px; bottom: 150px; width: 260px; height: 180px; }
+    body.poi-open:not(.province) .minimap:not(.expanded), body.poi-open:not(.province) .mm-show { display: none !important; }
+    #minimap-map { flex: 1; background: #0b0f19; }
+    .mm-bar {
+      position: absolute; left: 6px; right: 6px; top: 6px; z-index: 500;
+      display: flex; gap: 6px; justify-content: space-between; pointer-events: none;
+    }
+    .mm-btn {
+      pointer-events: auto; height: 30px; padding: 0 10px; border-radius: 9px; font-size: 12px;
+      background: rgba(12, 17, 29, 0.88); border: 1px solid var(--line-strong);
+    }
+    .mm-btn.icon { width: 30px; padding: 0; }
+    .mm-show { position: fixed; left: 16px; bottom: 76px; z-index: 3; }
+    body.province .mm-show { left: auto; right: 16px; bottom: 150px; }
+    .minimap.expanded { inset: 0; width: auto; height: auto; border-radius: 0; z-index: 4; border: 0; }
+    .minimap.expanded .mm-bar { top: 76px; left: auto; right: 16px; justify-content: flex-end; }
+    .minimap.expanded .mm-btn { height: 40px; padding: 0 14px; font-size: 13px; }
+    body.map2d .legend, body.map2d .camstack, body.map2d .cambar, body.map2d #pois, body.map2d #labels,
+    body.map2d #pins, body.map2d .rail, body.map2d .inspector, body.map2d .corner-left { display: none !important; }
+    body.map2d .hud { z-index: 5; }
+    .leaflet-container { font: inherit; background: #0b0f19; }
+    /* OSM's light tiles turned into a dark map that matches the interface. */
+    .osm-dark { filter: invert(1) hue-rotate(180deg) brightness(0.88) contrast(0.92) saturate(0.55); }
+    .leaflet-control-attribution { background: rgba(12, 17, 29, 0.8) !important; color: var(--muted) !important; font-size: 10px; }
+    .leaflet-control-attribution a { color: var(--soft) !important; }
+    .leaflet-bar a { background: rgba(12, 17, 29, 0.9); color: var(--text); border-color: var(--line); }
+    .leaflet-bar a:hover { background: #18213a; }
+    .leaflet-tooltip { background: rgba(12, 17, 29, 0.92); color: var(--text); border: 1px solid var(--line-strong); font-size: 12px; }
+    .leaflet-tooltip-top::before { border-top-color: rgba(12, 17, 29, 0.92); }
+    @media (max-height: 700px) { .minimap:not(.expanded), .mm-show { display: none !important; } }
+    #map2d-btn { display: none; }
+
     /* ---------- mobile ---------- */
     .sheet { display: none; }
     @media (max-width: 720px) {
@@ -373,6 +411,10 @@
       .segmented a { padding: 0 10px; font-size: 13px; }
       .search { flex: 1 1 0; max-width: none; }
       .rail, .hud, .legend, .corner-left, #info-btn { display: none !important; }
+      .minimap:not(.expanded), .mm-show { display: none !important; }
+      #map2d-btn { display: grid; }
+      body.map2d .sheet { display: flex; z-index: 5; }
+      .minimap.expanded .mm-bar { top: 70px; }
       .drawer {
         top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 62%;
         border-radius: 22px 22px 0 0; z-index: 7; padding-bottom: 28px;
@@ -536,6 +578,7 @@
       <label class="check"><span><span class="swatch" style="background:rgba(255,255,255,0.45)"></span><span data-i18n="layers.tambons">เขตตำบล (มุมมองจังหวัด)</span></span><input type="checkbox" data-bind="tambonLines" /></label>
       <label class="check"><span data-i18n="layers.labels">ชื่อจังหวัด</span> <input type="checkbox" data-bind="labels" /></label>
       <label class="check"><span data-i18n="layers.pins">หมุดสูงสุด–ต่ำสุด</span> <input type="checkbox" data-bind="pins" /></label>
+      <label class="check"><span data-i18n="layers.minimap">แผนที่ย่อ 2D (ถนน สถานที่)</span><input type="checkbox" data-bind="minimap" /></label>
       <label class="check" data-world-only><span><span class="swatch" style="background:#e8edf7;opacity:.7"></span><span data-i18n="layers.borders">เส้นแบ่งประเทศ</span></span><input type="checkbox" data-bind="borders" /></label>
       <label class="check" data-world-only><span><span class="swatch" style="background:#ff5a36"></span><span data-i18n="layers.plates">รอยต่อแผ่นเปลือกโลก</span></span><input type="checkbox" data-bind="plates" id="plates" /></label>
       <label class="check" data-world-only><span><span class="swatch" style="background:linear-gradient(90deg,#ff8a70 50%,#b79cff 50%)"></span><span data-i18n="layers.worldPois">10 อันดับสูงสุด/ลึกสุดของโลก</span></span><input type="checkbox" data-bind="worldPois" /></label>
@@ -615,6 +658,9 @@
     <button type="button" class="ghost-btn" id="topview" data-i18n="cam.top">มุมบน</button>
   </div>
   <div class="camstack">
+    <button type="button" class="icon-btn" id="map2d-btn" aria-label="แผนที่ 2D" data-i18n-attr="aria-label:map2d.open;title:map2d.open" title="แผนที่ 2D">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9d3e6" stroke-width="1.8" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3Z" /><path d="M9 3v15M15 6v15" /></svg>
+    </button>
     <button type="button" class="icon-btn" id="north" aria-label="หันทิศเหนือขึ้น" data-i18n-attr="aria-label:cam.north">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 15 12H9Z" fill="#ff8a70" /><path d="M12 21 9 12h6Z" fill="#9aa6bd" /></svg>
     </button>
@@ -624,6 +670,19 @@
       <button type="button" id="zoom-out" aria-label="ซูมออก" data-i18n-attr="aria-label:cam.zoomOut">−</button>
     </div>
   </div>
+
+  <!-- 2D map: corner mini-map, or full screen in 2D mode -->
+  <section class="minimap glass" id="minimap" aria-label="แผนที่ 2 มิติ" data-i18n-attr="aria-label:map2d.label" hidden>
+    <div id="minimap-map"></div>
+    <div class="mm-bar">
+      <button type="button" class="mm-btn" id="mm-expand" data-i18n="map2d.expand">ขยายเป็นแผนที่ 2D</button>
+      <button type="button" class="mm-btn" id="mm-back" data-i18n="map2d.back" hidden>กลับสู่ 3D</button>
+      <button type="button" class="mm-btn icon" id="mm-hide" aria-label="ซ่อนแผนที่ย่อ" data-i18n-attr="aria-label:map2d.hide">–</button>
+    </div>
+  </section>
+  <button type="button" class="icon-btn mm-show" id="mm-show" aria-label="แสดงแผนที่ย่อ 2D" data-i18n-attr="aria-label:map2d.show;title:map2d.show" title="แสดงแผนที่ย่อ 2D" hidden>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9d3e6" stroke-width="1.8" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3Z" /><path d="M9 3v15M15 6v15" /></svg>
+  </button>
 
   <!-- World top-10 detail card -->
   <section class="poi-card glass" id="poi-card" aria-label="รายละเอียดจุด" data-i18n-attr="aria-label:poi.card" hidden>

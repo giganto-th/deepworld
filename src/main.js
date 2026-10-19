@@ -9,6 +9,7 @@ import {
   createSurface, createDrapedLines, createStarfield, createMask, geojsonLines, latLonToVec3, vec3ToLatLon,
 } from './globe.js';
 import { bbox, extremes, createPin, inRings, provinceTileRange } from './province.js';
+import { createMiniMap } from './minimap.js';
 import { t, lang, applyDom, switchLanguage, pageUrl } from './i18n.js';
 import {
   fmt, fmtH, fmtM, fmtDist, initDrawers, initPopover, bindInputs, setStatus, createLegend, updateScaleBar, createSearch,
@@ -105,6 +106,7 @@ const state = {
   orbit: false,
   worldPois: !THAI_MODE,
   borders: !THAI_MODE,
+  minimap: !matchMedia('(max-width: 720px)').matches,
 };
 
 // OrbitControls fixes its "up" when created, so switching between the globe view
@@ -491,6 +493,8 @@ async function enterProvince(f, { focus = null, focusLines = null } = {}) {
   document.body.classList.add('province');
   drawers.close();
   $('poi-card').hidden = true;
+  document.body.classList.remove('poi-open');
+  mini?.highlight(focusLines ?? f.lines);
   showInspector(f);
   frameArea(focus ?? b);
 
@@ -517,6 +521,7 @@ function exitProvince({ fly = true } = {}) {
   showTambonLines(null);
   view = null;
   document.body.classList.remove('province');
+  mini?.highlight(null);
   $('pi-exag-note').hidden = true;
   setExaggeration(prevExag);
   renderPlaceList();
@@ -932,6 +937,7 @@ async function loadWorldPois() {
     }
     renderPoiList();
     placePois();
+    setMiniPois();
   } catch (e) {
     console.warn('world extremes unavailable', e);
   }
@@ -1018,6 +1024,7 @@ function selectPoi(p, { fly = false } = {}) {
   const card = $('poi-card');
   card.hidden = false;
   card.scrollTop = 0;
+  document.body.classList.add('poi-open');
   card.classList.toggle('deep', p.kind === 'deep');
   $('poi-rank').textContent = t(p.kind === 'high' ? 'poi.rankHigh' : 'poi.rankDeep', { n: p.rank });
   $('poi-name').textContent = nm(p);
@@ -1085,10 +1092,110 @@ function renderPoiList() {
   }
 }
 
+// ---------- 2D map (Leaflet) ----------
+// A corner mini-map that follows the 3D view, or a full-screen 2D mode ("map2d").
+let mini = null;
+let miniLoading = null;
+let map2d = false;
+
+function ensureMini() {
+  if (mini || miniLoading) return miniLoading;
+  miniLoading = createMiniMap($('minimap-map'), {
+    onClick: (lat, lon) => {
+      if (map2d) { showReadout(infoAt(lat, lon)); return; }
+      flyToPoint3d(lat, lon);
+    },
+    onHover: (lat, lon) => { if (map2d) showReadout(infoAt(lat, lon)); },
+    onLeave: () => { if (map2d) showReadout(null); },
+  }).then((m) => {
+    mini = m;
+    if (view) mini.highlight(provinces?.highlight ? view.f.lines : null);
+    setMiniPois();
+    return m;
+  }).catch((e) => { console.warn('2D map unavailable', e); miniLoading = null; });
+  return miniLoading;
+}
+
+function setMiniPois() {
+  if (!mini || THAI_MODE || !pois.length) return;
+  mini.setPois(pois.map((p) => ({ ...p, label: `${nm(p).split(EN ? ', ' : ' · ')[0]} ${fmtM(p.h)}` })),
+    (p) => { if (map2d) leaveMap2d(); selectPoi(pois.find((q) => q.kind === p.kind && q.rank === p.rank), { fly: true }); });
+}
+
+function updateMiniVisibility() {
+  const show = state.minimap || map2d;
+  $('minimap').hidden = !show;
+  $('mm-show').hidden = show;
+  if (show) ensureMini()?.then(() => mini?.invalidate());
+}
+
+// Fly the 3D camera to a point picked on the 2D map, keeping the current altitude.
+function flyToPoint3d(lat, lon) {
+  if (view) {
+    const d = 0.15;
+    frameArea({ latMin: lat - d, latMax: lat + d, lonMin: lon - d, lonMax: lon + d });
+  } else {
+    flyTo({ lat, lon, dist: camera.position.length() });
+  }
+}
+
+// What the readout shows for a lat/lon (from the 2D map).
+function infoAt(lat, lon) {
+  const grid = patch && contains(patch.grid, lat, lon) ? patch.grid : globe?.grid;
+  if (!grid) return null;
+  const province = provinceAt(lat, lon);
+  return {
+    lat, lon, h: heightAt(grid, lat, lon), province, tambon: tambonAt(province, lat, lon),
+    country: province || THAI_MODE ? null : countryAt(lat, lon),
+  };
+}
+
+async function enterMap2d() {
+  if (map2d) return;
+  map2d = true;
+  document.body.classList.add('map2d');
+  $('minimap').classList.add('expanded');
+  $('mm-expand').hidden = true;
+  $('mm-hide').hidden = true;
+  $('mm-back').hidden = false;
+  drawers.close();
+  updateMiniVisibility();
+  await ensureMini();
+  mini?.setExpanded(true);
+}
+
+// Back to 3D, flying the camera to where the 2D map is centered.
+function leaveMap2d() {
+  if (!map2d) return;
+  map2d = false;
+  document.body.classList.remove('map2d');
+  $('minimap').classList.remove('expanded');
+  $('mm-expand').hidden = false;
+  $('mm-hide').hidden = false;
+  $('mm-back').hidden = true;
+  updateMiniVisibility();
+  if (!mini) return;
+  mini.setExpanded(false);
+  const c = mini.center();
+  const span = ((156543.03 * Math.cos(c.lat * d2r)) / 2 ** c.zoom) * innerWidth; // meters across the 2D view
+  if (view) {
+    const dLat = span / 2 / 111320;
+    frameArea({ latMin: c.lat - dLat / 2, latMax: c.lat + dLat / 2, lonMin: c.lon - dLat, lonMax: c.lon + dLat });
+  } else {
+    const alt = THREE.MathUtils.clamp(span / EARTH_RADIUS / (2 * Math.tan((camera.fov / 2) * d2r)), 0.01, 6);
+    flyTo({ lat: c.lat, lon: c.lon, dist: 1 + alt });
+  }
+}
+
 // ---------- UI ----------
 applyDom();
 document.title = t(THAI_MODE ? 'meta.title.thai' : 'meta.title.world');
 $('lang-btn').addEventListener('click', switchLanguage);
+$('mm-expand').addEventListener('click', enterMap2d);
+$('mm-back').addEventListener('click', leaveMap2d);
+$('map2d-btn').addEventListener('click', () => (map2d ? leaveMap2d() : enterMap2d()));
+$('mm-hide').addEventListener('click', () => { state.minimap = false; syncInputs(); updateMiniVisibility(); });
+$('mm-show').addEventListener('click', () => { state.minimap = true; syncInputs(); updateMiniVisibility(); });
 // World / Thailand links stay in the current language.
 $('mode-world').href = pageUrl('world');
 $('mode-thai').href = pageUrl('thai');
@@ -1104,6 +1211,7 @@ const syncInputs = bindInputs(state, {
   sea: (v) => fmtH(v),
 }, (k) => {
   if (k === 'quality') { loadQuality(state.quality); return; }
+  if (k === 'minimap') { updateMiniVisibility(); return; }
   if (k === 'water') $('sea').disabled = !state.water;
   applyState();
 });
@@ -1128,7 +1236,7 @@ for (const [id, r] of Object.entries(RAMPS)) {
 
 // Legend: range fitted to what is on screen, or the whole ramp.
 const legend = createLegend({ bar: $('legend-bar'), ticks: $('legend-ticks'), mark: $('legend-mark') });
-const mini = createLegend({ bar: $('mini-bar'), ticks: $('mini-ticks'), mark: $('mini-mark'), horizontal: true });
+const miniLegend = createLegend({ bar: $('mini-bar'), ticks: $('mini-ticks'), mark: $('mini-mark'), horizontal: true });
 function currentRange() {
   if (state.range === 'world') return { min: RAMP_MIN, max: RAMP_MAX };
   if (view?.ex) return { min: view.ex.min.h, max: view.ex.max.h };
@@ -1141,7 +1249,7 @@ function updateRange() {
   if (max - min < 10) max = min + 10;
   const stops = RAMPS[state.ramp].stops;
   legend.set(min, max, rampCss(stops, min, max, 'to bottom'));
-  mini.set(min, max, rampCss(stops, min, max, 'to left'));
+  miniLegend.set(min, max, rampCss(stops, min, max, 'to left'));
 }
 for (const btn of document.querySelectorAll('[data-range]')) {
   btn.addEventListener('click', () => {
@@ -1161,6 +1269,7 @@ for (const btn of document.querySelectorAll('[data-poi-kind]')) {
 }
 $('poi-close').addEventListener('click', () => {
   $('poi-card').hidden = true;
+  document.body.classList.remove('poi-open');
   poiSelected = null;
   for (const q of pois) q.el.setAttribute('aria-pressed', 'false');
 });
@@ -1206,6 +1315,13 @@ $('place-filter').addEventListener('input', renderPlaceList);
 
 // Search: provinces, districts, tambons, or "lat, lon".
 const search = createSearch($('search'), $('search-list'), (r) => {
+  if (map2d && mini) {
+    if (r.kind === 'coord') { mini.flyTo(r.lat, r.lon, 12); return; }
+    const lines = r.kind === 'province' ? r.f.lines : r.lines;
+    mini.highlight(lines);
+    mini.fitBounds(r.kind === 'province' ? bbox(r.f) : r.bbox);
+    return;
+  }
   if (r.kind === 'coord') {
     exitProvince({ fly: false });
     flyTo({ lat: r.lat, lon: r.lon, dist: 1.08 });
@@ -1288,6 +1404,7 @@ addEventListener('keydown', (e) => {
   if (e.key === '/' && !typing) { e.preventDefault(); $('search').focus(); return; }
   if (e.key !== 'Escape' || typing) return;
   if (info.isOpen()) info.close();
+  else if (map2d) leaveMap2d();
   else if (!$('poi-card').hidden) $('poi-close').click();
   else if (drawers.isOpen()) drawers.close();
   else exitProvince();
@@ -1359,7 +1476,7 @@ function showReadout(p) {
   const hud = $('hud');
   hud.classList.toggle('idle', !p);
   legend.cursor(p ? p.h : null);
-  mini.cursor(p ? p.h : null);
+  miniLegend.cursor(p ? p.h : null);
   if (!p) {
     $('hud-place').textContent = t('hud.idle');
     $('hud-coord').textContent = '—';
@@ -1381,16 +1498,21 @@ function showReadout(p) {
   $('sheet-3d').hidden = !tapped;
   if (tapped) $('sheet-3d').textContent = t('sheet.view3d', { p: provinceTitle(tapped) });
 }
-$('sheet-3d').addEventListener('click', () => tapped && enterProvince(tapped));
+$('sheet-3d').addEventListener('click', () => {
+  if (!tapped) return;
+  if (map2d) leaveMap2d();
+  enterProvince(tapped);
+});
 
 renderer.domElement.addEventListener('pointermove', (e) => {
   if (e.pointerType !== 'mouse') return;
   const p = pick(e.clientX, e.clientY);
   showReadout(p);
+  mini?.cursor(p?.lat, p?.lon);
   prefetchProvinceSoon(p?.province);
   renderer.domElement.style.cursor = p?.province && p.province !== view?.f ? 'pointer' : '';
 });
-renderer.domElement.addEventListener('pointerleave', () => showReadout(null));
+renderer.domElement.addEventListener('pointerleave', () => { showReadout(null); mini?.cursor(null); });
 let pressed = null;
 renderer.domElement.addEventListener('pointerdown', (e) => {
   pressed = { x: e.clientX, y: e.clientY, t: performance.now() };
@@ -1487,7 +1609,12 @@ function updateSlowUi(now) {
   const cy = innerHeight * (view ? 0.6 : 0.5);
   const a = pickLatLon(cx - 50, cy);
   const b = pickLatLon(cx + 50, cy);
-  updateScaleBar(a && b ? haversine(a, b) / 100 : null);
+  const mpp = a && b ? haversine(a, b) / 100 : null;
+  updateScaleBar(mpp);
+  if (mini && !map2d && state.minimap) {
+    const c = pickLatLon(cx, cy);
+    if (c) mini.follow(c.lat, c.lon, mpp ? mpp * innerWidth / $('minimap').clientWidth : null);
+  }
   if (view && !flight) {
     const el = Math.round(cameraElevation());
     if (document.activeElement !== $('tilt')) $('tilt').value = el;
@@ -1544,6 +1671,7 @@ addEventListener('resize', () => {
 });
 
 loadExtremeData();
+updateMiniVisibility();
 if (THAI_MODE) {
   document.body.classList.add('thai');
   Promise.all([loadThailand(7, { preview: true }), loadProvinces()])
