@@ -6,12 +6,12 @@
 - **2 ภาษา** ไทย/อังกฤษ: หน้าภาษาอังกฤษอยู่ที่ `/en/` และ `/en/thai/` สลับได้ด้วยปุ่ม English/ไทย
 - **10 อันดับยอดเขาสูงที่สุดและจุดลึกที่สุดของโลก**: หมุดแสดงอันดับและจัดตำแหน่งไม่ให้ทับกัน การ์ดรายละเอียดมีภาพจาก Wikimedia Commons (ระบุผู้ถ่ายและสัญญาอนุญาต) และคำอธิบายจากวิกิพีเดีย
 - ค้นหาจังหวัด อำเภอ ตำบล หรือพิกัด (กด `/` เพื่อเริ่มค้นหา) · ชี้เมาส์เพื่อดู ต./อ./จ. และความสูง
-- **แผนที่ 2D (Leaflet)**: แผนที่ย่อมุมจอที่ตามมุมมอง 3D (แสดงตำแหน่งกลางจอ จุดใต้เคอร์เซอร์ และขอบเขตจังหวัดที่เลือก) คลิกบนแผนที่ย่อเพื่อบินไปจุดนั้น หรือขยายเป็นแผนที่ 2D เต็มจอที่มีถนนและชื่อสถานที่ (tile จาก OpenStreetMap ปรับเป็นโทนมืด)
+- **ถนนและชื่อสถานที่บนแผนที่ 3D**: tile ถนนและชื่อสถานที่แบบโปร่งใส (Esri World Transportation / World Boundaries and Places) วางทาบบนภูมิประเทศ 3D โดยตรง ทั้งบนลูกโลก ประเทศไทย และมุมมองจังหวัด เปิด/ปิดได้ในแผงชั้นข้อมูล
 - เส้นแบ่งประเทศ (Natural Earth) และชื่อประเทศเมื่อชี้เมาส์ (ไทยจาก Wikidata / อังกฤษ)
 - สเกลความสูงปรับช่วงตามพื้นที่ที่แสดงอยู่ มีชุดสี 3 แบบ (ธรรมชาติ, ความร้อน, ขาวดำ)
 - คลิกจังหวัดเพื่อดูแบบ 3D ที่ความละเอียด ~38–75 ม./พิกเซล แผงตรวจสอบแสดงจุดสูงสุด/ต่ำสุดพร้อมชื่อสถานที่ histogram ความสูง และรายชื่ออำเภอ
 - tile จะถูกเก็บใน Cache Storage และโหลดข้อมูลประเทศไทยกับจังหวัดที่ชี้อยู่ไว้ล่วงหน้าเบื้องหลัง
-- ข้อมูล: [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles), [OpenGISData-Thailand](https://github.com/chingchai/OpenGISData-Thailand) (CC BY 4.0), ชื่อยอดเขาจาก © OpenStreetMap contributors, เส้นแบ่งประเทศ [Natural Earth](https://www.naturalearthdata.com) (public domain)
+- ข้อมูล: [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles), [OpenGISData-Thailand](https://github.com/chingchai/OpenGISData-Thailand) (CC BY 4.0), ชื่อยอดเขาจาก © OpenStreetMap contributors, ถนน/สถานที่ Esri, HERE, Garmin, © OpenStreetMap contributors, เส้นแบ่งประเทศ [Natural Earth](https://www.naturalearthdata.com) (public domain)
 
 ## รัน
 

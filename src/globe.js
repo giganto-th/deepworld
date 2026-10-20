@@ -87,6 +87,8 @@ setRamp(RAMP_STOPS);
 
 const noMask = new THREE.DataTexture(new Uint8Array([255]), 1, 1, THREE.RedFormat);
 noMask.needsUpdate = true;
+const noOverlay = new THREE.DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1, THREE.RGBAFormat);
+noOverlay.needsUpdate = true;
 
 // Land mask over a lat/lon box (e.g. Thailand): canvas-rasterized polygons → R8 texture.
 // Surfaces given this mask discard everything outside it.
@@ -187,6 +189,14 @@ const fragmentShader = /* glsl */ `
   uniform bool uHoleOn;
   uniform sampler2D uMask; // optional land mask (see createMask)
   uniform bool uMaskOn;
+  // Draped map overlays (roads, place names) over a Web Mercator tile range.
+  uniform sampler2D uRoads;
+  uniform sampler2D uPlaces;
+  uniform bool uRoadsOn;
+  uniform bool uPlacesOn;
+  uniform float uOvN;     // 2^zoom of the overlay tiles
+  uniform vec2 uOvMin;    // first tile (x0, y0)
+  uniform vec2 uOvSize;   // tile count (nx, ny)
   uniform vec2 uMaskMin;
   uniform vec2 uMaskSize;
   varying vec2 vUv;
@@ -237,7 +247,18 @@ const fragmentShader = /* glsl */ `
     float lambert = max(dot(n, uSun), 0.0);
     float light = 0.28 + 0.9 * lambert;
     if (underwater) light = 0.55 + 0.45 * max(dot(up, uSun), 0.0);
-    gl_FragColor = vec4(color * light, 1.0);
+    vec3 shaded = color * light;
+    if (uRoadsOn || uPlacesOn) {
+      // lat/lon → tile coordinates → this overlay's texture uv (canvas row 0 = north, flipped).
+      float tx = (lon / PI + 1.0) * 0.5 * uOvN;
+      float ty = (1.0 - log(tan(PI * 0.25 + lat * 0.5)) / PI) * 0.5 * uOvN;
+      vec2 ou = vec2((tx - uOvMin.x) / uOvSize.x, 1.0 - (ty - uOvMin.y) / uOvSize.y);
+      if (all(greaterThanEqual(ou, vec2(0.0))) && all(lessThanEqual(ou, vec2(1.0)))) {
+        if (uRoadsOn) { vec4 r = texture2D(uRoads, ou); shaded = mix(shaded, r.rgb, r.a * 0.9); }
+        if (uPlacesOn) { vec4 pl = texture2D(uPlaces, ou); shaded = mix(shaded, pl.rgb, pl.a); }
+      }
+    }
+    gl_FragColor = vec4(shaded, 1.0);
   }
 `;
 
@@ -271,6 +292,13 @@ export function createSurface(grid, { segments = 256, globe = false } = {}) {
     uMaskOn: { value: false },
     uMaskMin: { value: new THREE.Vector2() },
     uMaskSize: { value: new THREE.Vector2(1, 1) },
+    uRoads: { value: noOverlay },
+    uPlaces: { value: noOverlay },
+    uRoadsOn: { value: false },
+    uPlacesOn: { value: false },
+    uOvN: { value: 1 },
+    uOvMin: { value: new THREE.Vector2() },
+    uOvSize: { value: new THREE.Vector2(1, 1) },
   };
   const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
   const geometry = globe
@@ -278,6 +306,7 @@ export function createSurface(grid, { segments = 256, globe = false } = {}) {
     : new THREE.PlaneGeometry(1, 1, segments, segments);
   const mesh = new THREE.Mesh(geometry, material);
   mesh.frustumCulled = false; // vertices are placed in the shader
+  let overlay = null;
   const reliefScale = THREE.MathUtils.clamp(Math.sqrt(texelMeters(grid) / 20000), 0.12, 1);
   return {
     mesh,
@@ -296,6 +325,26 @@ export function createSurface(grid, { segments = 256, globe = false } = {}) {
         (g.lonMax + 180) / 360 - iu, (g.latMax + 90) / 180 - iv,
       );
     },
+    // overlays: { range: { z, x0, y0, nx, ny }, roads: Texture|null, places: Texture|null } or null.
+    setOverlay(ov) {
+      for (const k of ['roads', 'places']) {
+        const old = overlay?.[k];
+        if (old && old !== ov?.[k]) old.dispose();
+      }
+      overlay = ov;
+      uniforms.uRoads.value = ov?.roads ?? noOverlay;
+      uniforms.uPlaces.value = ov?.places ?? noOverlay;
+      if (ov) {
+        uniforms.uOvN.value = 2 ** ov.range.z;
+        uniforms.uOvMin.value.set(ov.range.x0, ov.range.y0);
+        uniforms.uOvSize.value.set(ov.range.nx, ov.range.ny);
+      }
+    },
+    showOverlay(roads, places) {
+      uniforms.uRoadsOn.value = roads && !!overlay?.roads;
+      uniforms.uPlacesOn.value = places && !!overlay?.places;
+    },
+    get overlay() { return overlay; },
     setMask(mask) {
       uniforms.uMaskOn.value = !!mask;
       if (!mask) return;
@@ -307,6 +356,8 @@ export function createSurface(grid, { segments = 256, globe = false } = {}) {
       geometry.dispose();
       material.dispose();
       heightTex.dispose();
+      overlay?.roads?.dispose();
+      overlay?.places?.dispose();
     },
   };
 }
