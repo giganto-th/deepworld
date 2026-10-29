@@ -206,6 +206,26 @@
       background: rgba(125, 211, 252, 0.08); border: 1px solid var(--line);
     }
     .sea-presets button[aria-pressed="true"] { background: var(--accent-bg); border-color: var(--accent); }
+    .year-row { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; }
+    .year-row .icon-btn { width: 40px; height: 40px; border-radius: 12px; }
+    .year-row .icon-btn[aria-pressed="true"] { background: var(--accent-bg); border-color: var(--accent); }
+    #sea-year-out { font-family: var(--mono); color: var(--accent); }
+    .sea-readout { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .sea-readout b { font: 500 22px var(--mono); color: var(--cursor); }
+    .sea-readout span { font-size: 12px; color: var(--muted); text-align: right; }
+    .sea-chart { width: 100%; height: auto; display: block; border-radius: 10px; background: rgba(160, 180, 220, 0.05); }
+    .sea-chart text { font: 9px var(--mono); fill: var(--muted); }
+    .sea-chart .g { stroke: rgba(160, 180, 220, 0.14); stroke-width: 1; }
+    .sea-chart .m { stroke: var(--cursor); stroke-width: 1; stroke-dasharray: 3 3; }
+    .scenarios { display: flex; flex-direction: column; gap: 4px; }
+    .scenarios button {
+      display: grid; grid-template-columns: 12px auto 1fr auto; gap: 8px; align-items: center; text-align: left;
+      min-height: 34px; padding: 4px 8px; border-radius: 9px; border: 1px solid transparent; background: transparent; font-size: 12.5px;
+    }
+    .scenarios button i { width: 12px; height: 4px; border-radius: 2px; }
+    .scenarios button b { font: 500 11.5px var(--mono); color: var(--soft); }
+    .scenarios button small { font: 11.5px var(--mono); color: var(--muted); }
+    .scenarios button[aria-checked="true"] { background: rgba(160, 180, 220, 0.08); border-color: var(--line-strong); }
     .ramps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
     .ramps button {
       padding: 6px; border-radius: 10px; border: 1px solid var(--line-strong); background: transparent;
@@ -421,7 +441,7 @@
       #mini-ticks .end-min { transform: none; }
       #mini-ticks .end-max { transform: translateX(-100%); }
       .sheet .primary { height: 46px; border-radius: 12px; border: 0; background: var(--accent); color: #06223a; font-weight: 600; }
-      .sheet .tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: rgba(160, 180, 220, 0.08); }
+      .sheet .tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: rgba(160, 180, 220, 0.08); }
       .sheet .tabs button { height: 38px; border: 0; border-radius: 9px; background: transparent; font-size: 13px; color: var(--soft); }
       .sheet .tabs button[aria-pressed="true"] { background: var(--accent-bg); color: var(--text); }
     }
@@ -504,6 +524,10 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><path d="m3 17 5-7 4 5 3-4 6 6" /><path d="M3 21h18" /></svg>
       <span data-i18n="rail.terrain">ภูมิประเทศ</span>
     </button>
+    <button type="button" data-drawer="d-sea" aria-pressed="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><path d="M2 15c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2" /><path d="M2 20c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2" /><path d="M12 3v7M9 7l3 3 3-3" /></svg>
+      <span data-i18n="rail.sea">ระดับน้ำ</span>
+    </button>
     <button type="button" data-drawer="d-layers" aria-pressed="false">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 13 9 5 9-5" /></svg>
       <span data-i18n="rail.layers">ชั้นข้อมูล</span>
@@ -531,13 +555,21 @@
       <span class="field-label" data-i18n="terrain.ramp">ชุดสี</span>
       <div class="ramps" id="ramps"></div>
     </div>
-    <div class="group">
+    <p class="hint" id="detail"></p>
+  </section>
+
+  <section class="drawer glass" id="d-sea" aria-label="ระดับน้ำทะเล" data-i18n-attr="aria-label:sea.title" hidden>
+    <div class="drawer-head">
+      <h2 data-i18n="sea.title">ระดับน้ำทะเล</h2>
+      <button type="button" class="drawer-close" aria-label="ปิดแผง" data-i18n-attr="aria-label:closePanel"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa6bd" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+    </div>
+    <div class="field">
       <label class="check"><span data-i18n="terrain.water">จำลองระดับน้ำทะเล</span> <input type="checkbox" data-bind="water" /></label>
       <div class="field">
         <label class="field-label" for="sea-num"><span data-i18n="terrain.sea">ระดับน้ำ (เทียบปัจจุบัน)</span> <output data-out="sea"></output></label>
         <div class="sea-step">
           <button type="button" class="ghost-btn" data-sea-step="-1" aria-label="ลดระดับน้ำ 1 เมตร" data-i18n-attr="aria-label:sea.down">−1</button>
-          <input type="number" id="sea-num" min="-6000" max="3000" step="1" data-bind="sea" inputmode="numeric" />
+          <input type="number" id="sea-num" min="-6000" max="3000" step="0.01" data-bind="sea" inputmode="decimal" />
           <span class="unit" data-i18n="unit.m">ม.</span>
           <button type="button" class="ghost-btn" data-sea-step="1" aria-label="เพิ่มระดับน้ำ 1 เมตร" data-i18n-attr="aria-label:sea.up">+1</button>
         </div>
@@ -553,7 +585,24 @@
         <p class="hint" id="sea-flood" aria-live="polite"></p>
       </div>
     </div>
-    <p class="hint" id="detail"></p>
+    <section class="group" aria-label="ระดับน้ำตามปี" data-i18n-attr="aria-label:sea.byYear">
+      <span class="field-label"><span data-i18n="sea.byYear">ตามปี · ค่าเฉลี่ยทั้งโลก</span> <output id="sea-year-out"></output></span>
+      <div class="year-row">
+        <button type="button" class="icon-btn" id="sea-play" aria-label="เล่นต่อเนื่อง" data-i18n-attr="aria-label:sea.play" aria-pressed="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#e8edf7" aria-hidden="true"><path d="M7 4v16l13-8Z" /></svg>
+        </button>
+        <input type="range" id="sea-year" min="1901" max="2150" step="1" aria-label="ปี" data-i18n-attr="aria-label:sea.year" />
+      </div>
+      <div class="sea-readout">
+        <b id="sea-year-value"></b>
+        <span id="sea-year-range"></span>
+      </div>
+      <svg class="sea-chart" id="sea-chart" role="img" aria-label="กราฟระดับน้ำทะเลตามปี" data-i18n-attr="aria-label:sea.chart"></svg>
+      <div class="scenarios" id="sea-scenarios" role="radiogroup" aria-label="สถานการณ์การปล่อยก๊าซ" data-i18n-attr="aria-label:sea.scenarios"></div>
+      <label class="check"><span data-i18n="sea.useHigh">ใช้ค่าสูงของช่วง (กรณีแย่กว่าคาด)</span><input type="checkbox" id="sea-high" /></label>
+      <label class="check"><span data-i18n="sea.subside">บวกแผ่นดินทรุด ~1 ซม./ปี (แบบ กทม.)</span><input type="checkbox" id="sea-subside" /></label>
+      <p class="hint" id="sea-note" data-i18n="sea.note"></p>
+    </section>
   </section>
 
   <section class="drawer glass" id="d-layers" aria-label="ชั้นข้อมูล" data-i18n-attr="aria-label:rail.layers" hidden>
@@ -749,6 +798,7 @@
     <button type="button" class="primary" id="sheet-3d" hidden>ดู 3D จังหวัดนี้</button>
     <div class="tabs" role="group" aria-label="แผง" data-i18n-attr="aria-label:sheet.tabs">
       <button type="button" data-drawer="d-terrain" aria-pressed="false" data-i18n="rail.terrain">ภูมิประเทศ</button>
+      <button type="button" data-drawer="d-sea" aria-pressed="false" data-i18n="rail.sea">ระดับน้ำ</button>
       <button type="button" data-drawer="d-layers" aria-pressed="false" data-i18n="rail.layers">ชั้นข้อมูล</button>
       <button type="button" data-drawer="d-places" aria-pressed="false" data-i18n="rail.places">สถานที่</button>
     </div>

@@ -58,7 +58,7 @@ export function bindInputs(state, formats, onChange) {
       const k = el.dataset.bind;
       if (el.type === 'number' && el.value === '') return; // mid-edit (e.g. just typed "-")
       state[k] = el.type === 'checkbox' ? el.checked
-        : el.type === 'range' || el.type === 'number' ? Math.min(Number(el.max), Math.max(Number(el.min), Math.round(Number(el.value))))
+        : el.type === 'range' || el.type === 'number' ? Math.min(Number(el.max), Math.max(Number(el.min), Math.round(Number(el.value) * 100) / 100))
           : el.value;
       sync();
       onChange(k);

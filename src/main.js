@@ -10,6 +10,7 @@ import {
 } from './globe.js';
 import { bbox, extremes, createPin, inRings, provinceTileRange } from './province.js';
 import { loadOverlay, overlayRange } from './overlay.js';
+import { SCENARIOS, NOW, seaLevelAt, renderChart } from './sealevel.js';
 import { t, lang, applyDom, switchLanguage, pageUrl } from './i18n.js';
 import {
   fmt, fmtH, fmtM, fmtDist, initDrawers, initPopover, bindInputs, setStatus, createLegend, updateScaleBar, createSearch,
@@ -1151,7 +1152,7 @@ $(THAI_MODE ? 'mode-thai' : 'mode-world').setAttribute('aria-current', 'page');
 const syncInputs = bindInputs(state, {
   exaggeration: (v) => `${v}×`,
   relief: (v) => `${v}`,
-  sea: (v) => fmtH(v),
+  sea: (v) => fmtSea(v),
 }, (k) => {
   if (k === 'quality') { loadQuality(state.quality); return; }
   if (k === 'roads' || k === 'places') {
@@ -1164,18 +1165,23 @@ const syncInputs = bindInputs(state, {
 });
 
 // Sea level in 1 m steps: ±1 buttons, presets, and the flooded-area estimate (/thai).
+function fmtSea(v) {
+  const whole = Number.isInteger(v);
+  const n = v.toLocaleString(EN ? 'en-US' : 'th-TH', { maximumFractionDigits: whole ? 0 : 2, minimumFractionDigits: whole ? 0 : 2 });
+  return `${v > 0 ? '+' : ''}${n} ${t('unit.m')}`;
+}
 function setSea(v) {
-  state.sea = THREE.MathUtils.clamp(Math.round(v), -6000, 3000);
+  state.sea = THREE.MathUtils.clamp(Math.round(v * 100) / 100, -6000, 3000);
   state.water = true;
   syncInputs();
   updateSeaUi();
   applyState();
 }
 for (const b of document.querySelectorAll('[data-sea-step]')) {
-  b.addEventListener('click', () => setSea(state.sea + Number(b.dataset.seaStep)));
+  b.addEventListener('click', () => { stopSeaPlay(); setSea(state.sea + Number(b.dataset.seaStep)); });
 }
 for (const b of document.querySelectorAll('[data-sea]')) {
-  b.addEventListener('click', () => setSea(Number(b.dataset.sea)));
+  b.addEventListener('click', () => { stopSeaPlay(); setSea(Number(b.dataset.sea)); });
 }
 let floodTimer = 0;
 function updateSeaUi() {
@@ -1190,10 +1196,67 @@ function updateFlood() {
   if (!state.water || state.sea === 0) { el.textContent = ''; return; }
   if (state.sea < 0) { el.textContent = t('sea.exposed'); return; }
   if (!THAI_MODE || !floodBelow) { el.textContent = ''; return; }
-  const a = floodBelow[Math.min(state.sea, floodBelow.length - 1)];
-  el.textContent = t('sea.flooded', { a: fmt(a), p: (a / thaiLandArea * 100).toLocaleString(EN ? 'en-US' : 'th-TH', { maximumFractionDigits: 1 }) });
+  // Linear within the 1 m bin (the reprojected grid has fractional heights).
+  const k = Math.min(Math.floor(state.sea), floodBelow.length - 2);
+  const a = floodBelow[k] + (state.sea - k) * (floodBelow[k + 1] - floodBelow[k]);
+  el.textContent = t('sea.flooded', { a: fmt(a), p: (a / thaiLandArea * 100).toLocaleString(EN ? 'en-US' : 'th-TH', { maximumFractionDigits: a / thaiLandArea < 0.01 ? 2 : 1 }) });
 }
 updateSeaUi();
+
+// ---------- sea level by year (observed + IPCC AR6 projections) ----------
+const sea = { year: NOW, ssp: 'ssp245', high: false, subside: false, playing: 0 };
+const round2 = (x) => Math.round(x * 100) / 100;
+function seaForYear() {
+  const v = seaLevelAt(sea.ssp, sea.year);
+  const subs = sea.subside ? Math.max(0, sea.year - 2005) * 0.01 : 0;
+  return { ...v, subs, level: (sea.high ? v.high : v.median) + subs };
+}
+function renderSeaYear(apply) {
+  const v = seaForYear();
+  $('sea-year').value = sea.year;
+  $('sea-year-out').textContent = t('sea.yearOut', { be: sea.year + 543, ce: sea.year });
+  $('sea-year-value').textContent = fmtSea(round2(v.level));
+  const sc = SCENARIOS.find((s) => s.id === sea.ssp);
+  $('sea-year-range').textContent = v.observed ? t('sea.observed')
+    : t(sc.lowConfidence ? 'sea.rangeLc' : 'sea.range', { lo: fmtSea(round2(v.low)), hi: fmtSea(round2(v.high)) }) +
+      (v.subs ? ` ${t('sea.subsideAdd', { s: fmtSea(round2(v.subs)) })}` : '');
+  renderChart($('sea-chart'), { scenarioId: sea.ssp, year: sea.year, lang });
+  for (const b of $('sea-scenarios').children) {
+    b.setAttribute('aria-checked', String(b.dataset.ssp === sea.ssp));
+    b.querySelector('small').textContent = fmtSea(round2(seaLevelAt(b.dataset.ssp, sea.year).median));
+  }
+  if (apply) setSea(v.level);
+}
+for (const s of SCENARIOS) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.setAttribute('role', 'radio');
+  b.dataset.ssp = s.id;
+  b.innerHTML = `<i style="background:${s.color}"></i><b>${s.name}</b><span></span><small></small>`;
+  b.querySelector('span').textContent = EN ? s.en : s.th;
+  b.addEventListener('click', () => { sea.ssp = s.id; renderSeaYear(true); });
+  $('sea-scenarios').appendChild(b);
+}
+$('sea-year').addEventListener('input', (e) => { stopSeaPlay(); sea.year = Number(e.target.value); renderSeaYear(true); });
+$('sea-high').addEventListener('change', (e) => { sea.high = e.target.checked; renderSeaYear(true); });
+$('sea-subside').addEventListener('change', (e) => { sea.subside = e.target.checked; renderSeaYear(true); });
+function stopSeaPlay() {
+  if (!sea.playing) return;
+  clearInterval(sea.playing);
+  sea.playing = 0;
+  $('sea-play').setAttribute('aria-pressed', 'false');
+}
+$('sea-play').addEventListener('click', () => {
+  if (sea.playing) { stopSeaPlay(); return; }
+  if (sea.year >= 2150) sea.year = NOW;
+  $('sea-play').setAttribute('aria-pressed', 'true');
+  sea.playing = setInterval(() => {
+    sea.year = Math.min(2150, sea.year + 1);
+    renderSeaYear(true);
+    if (sea.year >= 2150) stopSeaPlay();
+  }, reducedMotion ? 400 : 120);
+});
+renderSeaYear(false);
 
 // Color schemes
 for (const [id, r] of Object.entries(RAMPS)) {
