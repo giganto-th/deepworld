@@ -10,7 +10,9 @@ import {
 } from './globe.js';
 import { bbox, extremes, createPin, inRings, provinceTileRange } from './province.js';
 import { loadOverlay, overlayRange } from './overlay.js';
-import { SCENARIOS, NOW, seaLevelAt, renderChart } from './sealevel.js';
+import {
+  SCENARIOS, NOW, seaLevelAt, renderChart, PAST, PAST_MAX, pastLevel, FUTURE, FUTURE_FROM, FUTURE_TO, futureLevel, renderSeries,
+} from './sealevel.js';
 import { t, lang, applyDom, switchLanguage, pageUrl } from './i18n.js';
 import {
   fmt, fmtH, fmtM, fmtDist, initDrawers, initPopover, bindInputs, setStatus, createLegend, updateScaleBar, createSearch,
@@ -1257,6 +1259,90 @@ $('sea-play').addEventListener('click', () => {
   }, reducedMotion ? 400 : 120);
 });
 renderSeaYear(false);
+
+// ---------- long timescales: past 26,000 years, next 10,000 years ----------
+const long = { tab: 'century', bp: 21000, curve: 'global', year: 4000, warming: 'w2', pick: 'mid' };
+const fmtN = (n) => Math.round(n).toLocaleString(EN ? 'en-US' : 'th-TH');
+const fmtLong = (m) => (Math.abs(m) >= 10 ? fmtSea(Math.round(m * 10) / 10) : fmtSea(round2(m)));
+
+function pastEra(bp) {
+  if (bp > 16500) return 'lgm';
+  if (bp > 14700) return 'deglacial';
+  if (bp > 14000) return 'mwp';
+  if (bp > 7500) return 'flood';
+  if (bp > 5500 && long.curve === 'gulf') return 'highstand';
+  return bp > 0 ? 'late' : null;
+}
+function renderPast(apply) {
+  const bp = long.bp;
+  const level = pastLevel(long.curve, bp);
+  $('sea-past').value = -bp;
+  $('sea-past-out').textContent = bp ? t('sea.bpOut', { n: fmtN(bp) }) : t('sea.now');
+  $('sea-past-value').textContent = fmtLong(level);
+  const era = pastEra(bp);
+  $('sea-past-era').textContent = era ? t(`sea.era.${era}`) : '';
+  for (const b of document.querySelectorAll('[data-past-curve]')) b.setAttribute('aria-checked', String(b.dataset.pastCurve === long.curve));
+  const neg = (pts) => pts.map(([a, m]) => [-a, m]);
+  renderSeries($('sea-past-chart'), {
+    series: [
+      { pts: neg(PAST.global), color: '#7dd3fc', width: long.curve === 'global' ? 2.4 : 1.2, opacity: long.curve === 'global' ? 1 : 0.5 },
+      { pts: neg(PAST.gulf), color: '#ffd166', width: long.curve === 'gulf' ? 2.4 : 1.2, opacity: long.curve === 'gulf' ? 1 : 0.5 },
+    ],
+    x: [-PAST_MAX, 0], y: [-140, 10],
+    xTicks: [-25000, -20000, -15000, -10000, -5000, 0].map((v) => [v, v ? `${-v / 1000}k` : (EN ? 'now' : 'ปัจจุบัน')]),
+    yTicks: [[0, '0'], [-50, '−50'], [-100, '−100']],
+    marker: [-bp, level],
+  });
+  if (apply) setSea(round2(level));
+}
+function renderFuture(apply) {
+  const v = futureLevel(long.warming, long.year);
+  const level = v[long.pick === 'mid' ? 'mid' : long.pick];
+  $('sea-future').value = long.year;
+  $('sea-future-out').textContent = t('sea.futureOut', { n: fmtN(long.year - NOW), be: long.year + 543, ce: long.year });
+  $('sea-future-value').textContent = fmtLong(level);
+  $('sea-future-range').textContent = t('sea.futureRange', { lo: fmtLong(v.low), hi: fmtLong(v.high) });
+  for (const b of $('sea-warming').children) b.setAttribute('aria-checked', String(b.dataset.warm === long.warming));
+  for (const b of document.querySelectorAll('[data-future-pick]')) b.setAttribute('aria-checked', String(b.dataset.futurePick === long.pick));
+  const years = [FUTURE_FROM, 3000, 4000, 6000, 8000, 10000, FUTURE_TO];
+  const sel = FUTURE.find((f) => f.id === long.warming);
+  renderSeries($('sea-future-chart'), {
+    series: FUTURE.map((f) => ({
+      pts: years.map((y) => [y, futureLevel(f.id, y).mid]),
+      color: f.color, width: f === sel ? 2.4 : 1.2, opacity: f === sel ? 1 : 0.45,
+    })),
+    band: { lo: years.map((y) => [y, futureLevel(sel.id, y).low]), hi: years.map((y) => [y, futureLevel(sel.id, y).high]), color: sel.color },
+    x: [FUTURE_FROM, FUTURE_TO], y: [0, 40],
+    xTicks: [2150, 4000, 6000, 8000, 10000, 12000].map((y) => [y, EN ? String(y) : String(y + 543)]),
+    yTicks: [[0, '0'], [10, '+10'], [20, '+20'], [30, '+30'], [40, '+40']],
+    marker: [long.year, level],
+  });
+  if (apply) setSea(round2(level));
+}
+function showSeaTab(tab, apply = true) {
+  stopSeaPlay();
+  long.tab = tab;
+  for (const b of document.querySelectorAll('[data-sea-tab]')) b.setAttribute('aria-selected', String(b.dataset.seaTab === tab));
+  for (const id of ['past', 'century', 'future']) $(`sea-tab-${id}`).hidden = id !== tab;
+  if (tab === 'past') renderPast(apply);
+  else if (tab === 'future') renderFuture(apply);
+  else renderSeaYear(apply);
+}
+for (const w of FUTURE) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.setAttribute('role', 'radio');
+  b.dataset.warm = w.id;
+  b.innerHTML = `<i style="background:${w.color}"></i>${w.label}`;
+  b.addEventListener('click', () => { long.warming = w.id; renderFuture(true); });
+  $('sea-warming').appendChild(b);
+}
+for (const b of document.querySelectorAll('[data-sea-tab]')) b.addEventListener('click', () => showSeaTab(b.dataset.seaTab));
+for (const b of document.querySelectorAll('[data-past-curve]')) b.addEventListener('click', () => { long.curve = b.dataset.pastCurve; renderPast(true); });
+for (const b of document.querySelectorAll('[data-future-pick]')) b.addEventListener('click', () => { long.pick = b.dataset.futurePick; renderFuture(true); });
+$('sea-past').addEventListener('input', (e) => { long.bp = -Number(e.target.value); renderPast(true); });
+$('sea-future').addEventListener('input', (e) => { long.year = Number(e.target.value); renderFuture(true); });
+showSeaTab('century', false);
 
 // Color schemes
 for (const [id, r] of Object.entries(RAMPS)) {

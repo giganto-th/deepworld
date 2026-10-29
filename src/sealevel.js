@@ -95,3 +95,69 @@ export function renderChart(svg, { scenarioId, year, lang }) {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.innerHTML = parts.join('');
 }
+
+// ---------- long timescales ----------
+// Past ~26,000 years, metres vs. today, by years before present (BP).
+// Global (ice-volume) curve: approximate, after Lambeck et al. 2014 (PNAS): ~-134 m at the
+// Last Glacial Maximum (~21 ka), main rise 16.5–8.2 ka (~12 m per 1,000 yr) including
+// Meltwater Pulse 1A (~18 m in ~500 yr, ~14.6 ka), near today's level by ~7 ka.
+// Gulf of Thailand (relative): the same rise, then a mid-Holocene highstand of ~+2.5 to
+// +4 m around 6.5–7 ka that flooded the lower Chao Phraya plain (Thai coastal studies).
+export const PAST = {
+  global: [[26000, -125], [21000, -134], [16500, -125], [14700, -105], [14200, -86], [12900, -66],
+    [11700, -58], [11000, -50], [10000, -40], [9000, -27], [8200, -15], [7000, -4], [6000, -1.5],
+    [4000, -0.5], [2000, -0.2], [0, 0]],
+  gulf: [[26000, -125], [21000, -134], [16500, -125], [14700, -105], [14200, -86], [12900, -66],
+    [11700, -58], [11000, -50], [10000, -40], [9000, -22], [8000, -5], [7000, 2.5], [6500, 4],
+    [5000, 3], [3000, 1.5], [1000, 0.5], [0, 0]],
+};
+export const PAST_MAX = 26000;
+
+// Committed rise over the next 10,000 years by peak warming (IPCC AR6 WG1 Box 9.4):
+// 2,000-year and 10,000-year ranges; 2150 from the SSP closest to each warming level.
+export const FUTURE = [
+  { id: 'w15', label: '1.5°C', color: '#5fd3a8', y2150: [0.37, 0.86], y2k: [2, 3], y10k: [6, 7] },
+  { id: 'w2', label: '2°C', color: '#9be27a', y2150: [0.46, 0.99], y2k: [2, 6], y10k: [8, 13] },
+  { id: 'w3', label: '3°C', color: '#ffd166', y2150: [0.66, 1.33], y2k: [4, 10], y10k: [10, 24] },
+  { id: 'w4', label: '4°C', color: '#ff9f5a', y2150: [0.89, 1.65], y2k: [12, 16], y10k: [19, 33] },
+  { id: 'w5', label: '5°C', color: '#ff6b6b', y2150: [0.98, 1.88], y2k: [19, 22], y10k: [28, 37] },
+];
+export const FUTURE_FROM = 2150;
+export const FUTURE_TO = 12000; // ~10,000 years from now
+
+export function pastLevel(curve, yearsBP) {
+  // Points run from oldest to now; as negative years they ascend, as interp() needs.
+  return interp(PAST[curve].map(([a, m]) => [-a, m]), -yearsBP, 1);
+}
+
+// { low, mid, high } for a warming level at a calendar year (2150 … 12000).
+export function futureLevel(id, year) {
+  const w = FUTURE.find((f) => f.id === id) ?? FUTURE[1];
+  const pts = [[FUTURE_FROM, ...w.y2150], [4000, ...w.y2k], [FUTURE_TO, ...w.y10k]];
+  const low = interp(pts.map(([y, lo]) => [y, lo]), year, 1);
+  const high = interp(pts.map(([y, , hi]) => [y, hi]), year, 1);
+  return { low, high, mid: (low + high) / 2 };
+}
+
+// Generic line chart: series [{ pts: [[x, y]], color, width, opacity }], optional band
+// { lo: [[x, y]], hi: [[x, y]], color }, axis ticks [[value, label]], and a marker [x, y].
+export function renderSeries(svg, { series, band, x: [x0, x1], y: [y0, y1], xTicks, yTicks, marker }) {
+  const W = 268, H = 150, L = 34, R = 8, T = 10, B = 22;
+  const sx = (v) => L + ((v - x0) / (x1 - x0)) * (W - L - R);
+  const sy = (v) => T + ((y1 - Math.max(y0, Math.min(y1, v))) / (y1 - y0)) * (H - T - B);
+  const d = (pts) => pts.map(([a, b], i) => `${i ? 'L' : 'M'}${sx(a).toFixed(1)},${sy(b).toFixed(1)}`).join('');
+  const out = [];
+  for (const [v, label] of yTicks) {
+    out.push(`<line x1="${L}" x2="${W - R}" y1="${sy(v)}" y2="${sy(v)}" class="g"/>`);
+    out.push(`<text x="${L - 4}" y="${sy(v) + 3}" text-anchor="end">${label}</text>`);
+  }
+  for (const [v, label] of xTicks) out.push(`<text x="${sx(v)}" y="${H - 6}" text-anchor="middle">${label}</text>`);
+  if (band) out.push(`<path d="${d(band.lo)}L${d([...band.hi].reverse()).slice(1)}Z" fill="${band.color}" opacity="0.18"/>`);
+  for (const s of series) out.push(`<path d="${d(s.pts)}" fill="none" stroke="${s.color}" stroke-width="${s.width ?? 1.5}" opacity="${s.opacity ?? 1}"/>`);
+  if (marker) {
+    out.push(`<line x1="${sx(marker[0])}" x2="${sx(marker[0])}" y1="${T}" y2="${H - B}" class="m"/>`);
+    out.push(`<circle cx="${sx(marker[0])}" cy="${sy(marker[1])}" r="4" fill="#ffd166" stroke="#0b0f19" stroke-width="1.5"/>`);
+  }
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = out.join('');
+}
