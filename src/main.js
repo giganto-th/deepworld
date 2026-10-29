@@ -157,6 +157,8 @@ let view = null;      // province 3D view: { f, target, up, prevExag, stemLen, p
 let loadId = 0;
 let detailId = 0;
 let thaiExtent = null;
+let floodBelow = null;   // Thailand land area below each whole metre (km²)
+let thaiLandArea = 0;
 
 const scale = () => state.exaggeration / EARTH_RADIUS;
 
@@ -227,10 +229,16 @@ function thaiRange() {
   const m = thaiMask;
   let min = Infinity;
   let max = -Infinity;
+  // Land area (km²) per 1 m height bin, for the sea-level flood estimate.
+  const bins = new Float64Array(9000);
+  let landArea = 0;
+  const pxLat = ((g.latMax - g.latMin) / g.height) * d2r * EARTH_RADIUS;
+  const pxLon = ((g.lonMax - g.lonMin) / g.width) * d2r * EARTH_RADIUS;
   for (let j = 0; j < g.height; j++) {
     const lat = g.latMin + ((j + 0.5) / g.height) * (g.latMax - g.latMin);
     const my = Math.floor(((lat - THAI_BOUNDS.latMin) / (THAI_BOUNDS.latMax - THAI_BOUNDS.latMin)) * m.height);
     if (my < 0 || my >= m.height) continue;
+    const area = (pxLat * pxLon * Math.cos(lat * d2r)) / 1e6;
     for (let i = 0; i < g.width; i++) {
       const lon = g.lonMin + ((i + 0.5) / g.width) * (g.lonMax - g.lonMin);
       const mx = Math.floor(((lon - THAI_BOUNDS.lonMin) / (THAI_BOUNDS.lonMax - THAI_BOUNDS.lonMin)) * m.width);
@@ -238,9 +246,15 @@ function thaiRange() {
       const h = g.data[j * g.width + i];
       if (h < min) min = h;
       if (h > max) max = h;
+      if (h >= 0) { bins[Math.min(8999, Math.floor(h))] += area; landArea += area; }
     }
   }
   thaiExtent = { min: Math.max(min, 0), max };
+  // floodBelow[k] = land area lower than k metres.
+  floodBelow = new Float64Array(bins.length + 1);
+  for (let k = 0; k < bins.length; k++) floodBelow[k + 1] = floodBelow[k] + bins[k];
+  thaiLandArea = landArea;
+  updateFlood();
   updateRange();
 }
 
@@ -1144,10 +1158,42 @@ const syncInputs = bindInputs(state, {
     updateOverlays();
     return;
   }
-  if (k === 'water') $('sea').disabled = !state.water;
+  if (k === 'sea' && !state.water) { state.water = true; syncInputs(); }
+  if (k === 'sea' || k === 'water') updateSeaUi();
   applyState();
 });
-$('sea').disabled = !state.water;
+
+// Sea level in 1 m steps: ±1 buttons, presets, and the flooded-area estimate (/thai).
+function setSea(v) {
+  state.sea = THREE.MathUtils.clamp(Math.round(v), -6000, 3000);
+  state.water = true;
+  syncInputs();
+  updateSeaUi();
+  applyState();
+}
+for (const b of document.querySelectorAll('[data-sea-step]')) {
+  b.addEventListener('click', () => setSea(state.sea + Number(b.dataset.seaStep)));
+}
+for (const b of document.querySelectorAll('[data-sea]')) {
+  b.addEventListener('click', () => setSea(Number(b.dataset.sea)));
+}
+let floodTimer = 0;
+function updateSeaUi() {
+  for (const b of document.querySelectorAll('[data-sea]')) {
+    b.setAttribute('aria-pressed', String(state.water && Number(b.dataset.sea) === state.sea));
+  }
+  clearTimeout(floodTimer);
+  floodTimer = setTimeout(updateFlood, 120);
+}
+function updateFlood() {
+  const el = $('sea-flood');
+  if (!state.water || state.sea === 0) { el.textContent = ''; return; }
+  if (state.sea < 0) { el.textContent = t('sea.exposed'); return; }
+  if (!THAI_MODE || !floodBelow) { el.textContent = ''; return; }
+  const a = floodBelow[Math.min(state.sea, floodBelow.length - 1)];
+  el.textContent = t('sea.flooded', { a: fmt(a), p: (a / thaiLandArea * 100).toLocaleString(EN ? 'en-US' : 'th-TH', { maximumFractionDigits: 1 }) });
+}
+updateSeaUi();
 
 // Color schemes
 for (const [id, r] of Object.entries(RAMPS)) {

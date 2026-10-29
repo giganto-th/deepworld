@@ -56,7 +56,10 @@ export function bindInputs(state, formats, onChange) {
   for (const el of inputs) {
     el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', () => {
       const k = el.dataset.bind;
-      state[k] = el.type === 'checkbox' ? el.checked : el.type === 'range' ? Number(el.value) : el.value;
+      if (el.type === 'number' && el.value === '') return; // mid-edit (e.g. just typed "-")
+      state[k] = el.type === 'checkbox' ? el.checked
+        : el.type === 'range' || el.type === 'number' ? Math.min(Number(el.max), Math.max(Number(el.min), Math.round(Number(el.value))))
+          : el.value;
       sync();
       onChange(k);
     });
